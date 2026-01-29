@@ -1,0 +1,23 @@
+server {
+    listen 80;
+    server_name monitoramen1.vps.webdock.cloud;  # Domínio exato para o Certbot encontrar
+
+    location / {
+        proxy_pass http://127.0.0.1:5000;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        
+        # CORS headers (REMOVIDO: Flask já gerencia isso via Flask-CORS)
+        # add_header 'Access-Control-Allow-Origin' '*' always;
+        # add_header 'Access-Control-Allow-Methods' 'GET, POST, PUT, DELETE, OPTIONS' always;
+        # add_header 'Access-Control-Allow-Headers' 'Authorization, Content-Type' always;
+    }
+
+    # Servir arquivos estáticos (avatars, etc)
+    location /static/ {
+        alias /var/www/assistencias-api/api/static/;
+        expires 30d;
+    }
+}

@@ -1,0 +1,13 @@
+[Unit]
+Description=Gunicorn instance to serve Assistencias API
+After=network.target
+
+[Service]
+User=www-data
+Group=www-data
+WorkingDirectory=/var/www/assistencias-api
+Environment="PATH=/var/www/assistencias-api/venv/bin"
+ExecStart=/var/www/assistencias-api/venv/bin/gunicorn -c gunicorn_config.py run:app
+
+[Install]
+WantedBy=multi-user.target

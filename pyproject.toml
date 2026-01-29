@@ -1,0 +1,12 @@
+# /pyproject.toml
+
+[project]
+name = "api_assistencias"
+version = "0.1.0"
+description = "API para sistema de gerenciamento de assistências."
+requires-python = ">=3.8"
+
+[tool.pytest.ini_options]
+# Informa ao pytest que ele deve adicionar a pasta raiz ao PYTHONPATH
+# para que os imports como 'from api...' funcionem corretamente.
+pythonpath = "."
