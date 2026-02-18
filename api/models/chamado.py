@@ -19,6 +19,10 @@ class Chamado(db.Model):
     data_atualizacao = db.Column(db.DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
     is_active = db.Column(db.Boolean, nullable=False, default=True)
     
+    # Scheduling fields
+    tempo_estimado_minutos = db.Column(db.Integer, nullable=True)
+    km_estimado = db.Column(db.Float, nullable=True)
+    
     logs = db.relationship('ChamadoLog', back_populates='chamado', lazy='dynamic', cascade="all, delete-orphan")
     cliente = db.relationship('Cliente', back_populates='chamados')
     usina = db.relationship('Usina', back_populates='chamados')

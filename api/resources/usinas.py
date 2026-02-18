@@ -109,3 +109,69 @@ def deletar_usina(id_usina):
         return jsonify({"message": "Erro ao deletar a usina", "error": str(e)}), 500
 
     return jsonify({"message": f"Usina ID {id_usina} deletada com sucesso."})
+
+@usinas_bp.route('/todas-usinas', methods=['GET'])
+@jwt_required()
+@tecnico_required()
+def listar_todas_usinas():
+    """
+    Lista todas as usinas cadastradas e retorna um objeto com resumo de performance e a lista.
+    Estrutura: { "resumo": { "total": int, "ok": int, "media": int, "critica": int }, "usinas": [...] }
+    """
+    import json
+    
+    usinas = Usina.query.options(joinedload(Usina.cliente)).order_by(Usina.nome_usina).all()
+    
+    lista_usinas = []
+    
+    # Contadores para o resumo
+    stats = {
+        "total": 0,
+        "ok": 0,    # >= 90%
+        "media": 0, # >= 75% e < 90%
+        "critica": 0 # < 75% ou sem dados
+    }
+    
+    for usina in usinas:
+        # Serializa dados básicos
+        dados_usina = UsinaSchema().dump(usina)
+        
+        # Performance extraction
+        performance_1_day = None
+        performance_15_days = None
+        performance_30_days = None
+        
+        if usina.solarz_payload:
+            try:
+                payload = json.loads(usina.solarz_payload)
+                if 'resumo' in payload and 'performance' in payload['resumo']:
+                    performance_1_day = payload['resumo']['performance']
+                    
+                    # Tenta pegar outros periodos se disponiveis (placeholder logic)
+                    # No payload atual só vimos 'resumo' genérico, que parece ser diario.
+            except Exception:
+                pass 
+        
+        # Injeta dados
+        dados_usina['performance_1_day'] = performance_1_day
+        dados_usina['performance_15_days'] = performance_15_days
+        dados_usina['performance_30_days'] = performance_30_days
+        
+        lista_usinas.append(dados_usina)
+        
+        # --- CÁLCULO DO RESUMO ---
+        stats["total"] += 1
+        
+        if performance_1_day is None:
+            stats["critica"] += 1
+        elif performance_1_day >= 90:
+            stats["ok"] += 1
+        elif performance_1_day >= 75:
+            stats["media"] += 1
+        else:
+            stats["critica"] += 1
+
+    return jsonify({
+        "resumo": stats,
+        "usinas": lista_usinas
+    })

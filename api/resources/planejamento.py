@@ -6,7 +6,12 @@ import traceback
 from datetime import datetime
 
 from .. import db
-from ..models import Chamado, Usina, Cliente, Usuario, OrdenServico
+from ..models import Chamado, Usina, Cliente, Usuario, OrdenServico, ConfiguracaoOperacional
+from ..services.capacity_calculation_service import CapacityCalculationService
+from ..services.rescheduling_service import ReschedulingService
+from ..services.route_optimization_service import RouteOptimizationService
+from ..services.time_estimation_service import TimeEstimationService
+
 
 planejamento_bp = Blueprint('planejamento', __name__)
 
@@ -210,4 +215,206 @@ def listar_planejamento():
 
     except Exception as e:
         logging.error(f"ERRO CRÍTICO NO MENU DE PLANEJAMENTO:\n{traceback.format_exc()}")
+        return jsonify({"erro": "Erro interno do servidor", "detalhes": str(e)}), 500
+
+
+@planejamento_bp.route('/validar-viabilidade', methods=['POST'])
+@jwt_required()
+def validar_viabilidade():
+    """
+    Validate if a set of OS fits within technician's working hours.
+    
+    Request JSON:
+        {
+            "tecnico_id": int,
+            "data": "YYYY-MM-DD",
+            "os_ids": [int, ...]
+        }
+    """
+    try:
+        data = request.get_json()
+        
+        tecnico_id = data.get('tecnico_id')
+        data_str = data.get('data')
+        os_ids = data.get('os_ids', [])
+        
+        if not tecnico_id or not data_str:
+            return jsonify({"erro": "tecnico_id e data são obrigatórios"}), 400
+        
+        capacity_service = CapacityCalculationService()
+        resultado = capacity_service.validar_viabilidade(tecnico_id, data_str, os_ids)
+        
+        return jsonify(resultado)
+        
+    except ValueError as e:
+        return jsonify({"erro": str(e)}), 400
+    except Exception as e:
+        logging.error(f"Erro ao validar viabilidade:\n{traceback.format_exc()}")
+        return jsonify({"erro": "Erro interno do servidor", "detalhes": str(e)}), 500
+
+
+@planejamento_bp.route('/sugerir-reagendamento', methods=['POST'])
+@jwt_required()
+def sugerir_reagendamento():
+    """
+    Suggest optimal rescheduling options for an OS.
+    
+    Request JSON:
+        {
+            "os_id": int,
+            "dias_futuros": int (optional, default 7)
+        }
+    """
+    try:
+        data = request.get_json()
+        
+        os_id = data.get('os_id')
+        dias_futuros = data.get('dias_futuros', 7)
+        
+        if not os_id:
+            return jsonify({"erro": "os_id é obrigatório"}), 400
+        
+        rescheduling_service = ReschedulingService()
+        resultado = rescheduling_service.sugerir_reagendamento(os_id, dias_futuros)
+        
+        return jsonify(resultado)
+        
+    except ValueError as e:
+        return jsonify({"erro": str(e)}), 400
+    except Exception as e:
+        logging.error(f"Erro ao sugerir reagendamento:\n{traceback.format_exc()}")
+        return jsonify({"erro": "Erro interno do servidor", "detalhes": str(e)}), 500
+
+
+@planejamento_bp.route('/calcular-rota', methods=['POST'])
+@jwt_required()
+def calcular_rota():
+    """
+    Calculate complete route for a technician on a specific date.
+    
+    Request JSON:
+        {
+            "tecnico_id": int,
+            "data": "YYYY-MM-DD"
+        }
+    """
+    try:
+        data = request.get_json()
+        
+        tecnico_id = data.get('tecnico_id')
+        data_str = data.get('data')
+        
+        if not tecnico_id or not data_str:
+            return jsonify({"erro": "tecnico_id e data são obrigatórios"}), 400
+        
+        # Get technician base coordinates
+        tecnico = Usuario.query.get(tecnico_id)
+        if not tecnico:
+            return jsonify({"erro": "Técnico não encontrado"}), 404
+        
+        base_coords = {
+            "latitude": float(tecnico.latitude_base) if tecnico.latitude_base else -24.465241,
+            "longitude": float(tecnico.longitude_base) if tecnico.longitude_base else -53.952700
+        }
+        
+        # Get OS for this technician on this date
+        data_obj = datetime.strptime(data_str, '%Y-%m-%d').date()
+        
+        chamados = Chamado.query.join(Usina).filter(
+            Chamado.id_usuario_responsavel == tecnico_id,
+            Chamado.status == 'Agendando Visita',
+            func.date(Chamado.data_agendamento) == data_obj
+        ).all()
+        
+        if not chamados:
+            return jsonify({
+                "rota": {
+                    "pontos": [{"tipo": "base", "nome": "Base", **base_coords}],
+                    "geometria": None,
+                    "distancia_total_km": 0.0,
+                    "tempo_total_minutos": 0.0
+                }
+            })
+        
+        # Build OS list
+        lista_os = []
+        for chamado in chamados:
+            if chamado.usina and chamado.usina.latitude and chamado.usina.longitude:
+                lista_os.append({
+                    "id": chamado.id_chamado,
+                    "cliente": chamado.cliente.nome if chamado.cliente else "Cliente",
+                    "latitude": float(chamado.usina.latitude),
+                    "longitude": float(chamado.usina.longitude)
+                })
+        
+        # Calculate route
+        route_service = RouteOptimizationService()
+        rota_completa = route_service.calcular_rota_completa(base_coords, lista_os)
+        
+        return jsonify({"rota": rota_completa})
+        
+    except ValueError as e:
+        return jsonify({"erro": str(e)}), 400
+    except Exception as e:
+        logging.error(f"Erro ao calcular rota:\n{traceback.format_exc()}")
+        return jsonify({"erro": "Erro interno do servidor", "detalhes": str(e)}), 500
+
+
+@planejamento_bp.route('/configuracoes', methods=['GET', 'PUT'])
+@jwt_required()
+def configuracoes():
+    """
+    Get or update operational configuration.
+    """
+    try:
+        if request.method == 'GET':
+            config = ConfiguracaoOperacional.query.first()
+            
+            if not config:
+                # Return defaults
+                return jsonify({
+                    "margem_seguranca_minutos": 30,
+                    "velocidade_media_kmh": 50.0,
+                    "tempo_medio_por_categoria": {
+                        "Manutenção Preventiva": 90,
+                        "Instalação": 180,
+                        "Reparo": 120,
+                        "Vistoria": 60
+                    },
+                    "feriados": []
+                })
+            
+            return jsonify({
+                "margem_seguranca_minutos": config.margem_seguranca_minutos,
+                "velocidade_media_kmh": float(config.velocidade_media_kmh),
+                "tempo_medio_por_categoria": config.tempo_medio_por_categoria or {},
+                "feriados": config.feriados or []
+            })
+        
+        elif request.method == 'PUT':
+            data = request.get_json()
+            
+            config = ConfiguracaoOperacional.query.first()
+            if not config:
+                config = ConfiguracaoOperacional()
+                db.session.add(config)
+            
+            if 'margem_seguranca_minutos' in data:
+                config.margem_seguranca_minutos = data['margem_seguranca_minutos']
+            
+            if 'velocidade_media_kmh' in data:
+                config.velocidade_media_kmh = data['velocidade_media_kmh']
+            
+            if 'tempo_medio_por_categoria' in data:
+                config.tempo_medio_por_categoria = data['tempo_medio_por_categoria']
+            
+            if 'feriados' in data:
+                config.feriados = data['feriados']
+            
+            db.session.commit()
+            
+            return jsonify({"mensagem": "Configuração atualizada com sucesso"})
+    
+    except Exception as e:
+        logging.error(f"Erro ao gerenciar configurações:\n{traceback.format_exc()}")
         return jsonify({"erro": "Erro interno do servidor", "detalhes": str(e)}), 500

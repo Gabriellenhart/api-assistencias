@@ -13,6 +13,12 @@ class Usuario(db.Model):
     nivel = db.Column(db.String(50), nullable=False, default='tecnico')
     avatar_filename = db.Column(db.String(255), nullable=True)
     theme_preference = db.Column(db.String(10), nullable=True, default='system')
+    
+    # Operational fields for scheduling
+    horario_inicio = db.Column(db.Time, nullable=True)
+    horario_fim = db.Column(db.Time, nullable=True)
+    latitude_base = db.Column(db.String(50), nullable=True)
+    longitude_base = db.Column(db.String(50), nullable=True)
 
     @property
     def password(self):

@@ -15,6 +15,9 @@ from .ordem_servico import OrdenServico, OrdemServicoItem
 from .system_update import SystemUpdate
 from .cliente_acesso import ClienteAcessoSolarz
 from .chamado_lembrete import ChamadoLembrete
+from .configuracao_operacional import ConfiguracaoOperacional
+from .historico_planejamento import HistoricoPlanejamento
+
 
 __all__ = [
     'db',
@@ -25,5 +28,8 @@ __all__ = [
     'Orcamento', 'OrcamentoMaterial', 'OrcamentoServico',
     'OrdenServico', 'OrdemServicoItem',
     'SystemUpdate',
-    'ClienteAcessoSolarz'
+    'ClienteAcessoSolarz',
+    'ConfiguracaoOperacional',
+    'HistoricoPlanejamento'
 ]
+
