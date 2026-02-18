@@ -1,0 +1,2508 @@
+{
+    "_type": "export",
+    "__export_format": 4,
+    "__export_date": "2024-05-22T00:00:00.000Z",
+    "__export_source": "insomnia.desktop.app:v2023.5.0",
+    "resources": [
+        {
+            "_id": "wrk_685b04376e2248cf8a4ed7aa7bfd7006",
+            "parentId": null,
+            "modified": 1700000000000,
+            "created": 1700000000000,
+            "name": "Sistema Assistencias API",
+            "description": "Auto-generated collection",
+            "_type": "workspace"
+        },
+        {
+            "_id": "env_5df1a1148aba47839558a381e7388d0d",
+            "parentId": "wrk_685b04376e2248cf8a4ed7aa7bfd7006",
+            "modified": 1700000000000,
+            "created": 1700000000000,
+            "name": "VPS Webdock",
+            "data": {
+                "base_url": "http://monitoramen1.vps.webdock.cloud",
+                "access_token": ""
+            },
+            "_type": "environment"
+        },
+        {
+            "_id": "fld_43f8f26ca38c45f8a300d86fb94035b4",
+            "parentId": "wrk_685b04376e2248cf8a4ed7aa7bfd7006",
+            "modified": 1700000000000,
+            "created": 1700000000000,
+            "name": "Routes",
+            "_type": "request_group"
+        },
+        {
+            "_id": "req_357847541e5b4617853ed36abd89ec1e",
+            "parentId": "fld_43f8f26ca38c45f8a300d86fb94035b4",
+            "modified": 1700000000000,
+            "created": 1700000000000,
+            "url": "{{ base_url }}/auth/login",
+            "name": "POST /login",
+            "description": "Auto-generated for routes",
+            "method": "POST",
+            "body": {
+                "mimeType": "application/json",
+                "text": "{\n\t\"example\": \"value\"\n}"
+            },
+            "parameters": [],
+            "headers": [
+                {
+                    "name": "Content-Type",
+                    "value": "application/json"
+                }
+            ],
+            "authentication": {},
+            "metaSortKey": -1700000000000,
+            "isPrivate": false,
+            "settingStoreCookies": true,
+            "settingSendCookies": true,
+            "settingDisableRenderRequestBody": false,
+            "settingEncodeUrl": true,
+            "settingRebuildPath": true,
+            "settingFollowRedirects": "global",
+            "_type": "request"
+        },
+        {
+            "_id": "req_31c15c57c13544b285a51011dac9f212",
+            "parentId": "fld_43f8f26ca38c45f8a300d86fb94035b4",
+            "modified": 1700000000000,
+            "created": 1700000000000,
+            "url": "{{ base_url }}/auth/refresh",
+            "name": "POST /refresh",
+            "description": "Auto-generated for routes",
+            "method": "POST",
+            "body": {
+                "mimeType": "application/json",
+                "text": "{\n\t\"example\": \"value\"\n}"
+            },
+            "parameters": [],
+            "headers": [
+                {
+                    "name": "Authorization",
+                    "value": "Bearer {{ access_token }}"
+                },
+                {
+                    "name": "Content-Type",
+                    "value": "application/json"
+                }
+            ],
+            "authentication": {},
+            "metaSortKey": -1700000000000,
+            "isPrivate": false,
+            "settingStoreCookies": true,
+            "settingSendCookies": true,
+            "settingDisableRenderRequestBody": false,
+            "settingEncodeUrl": true,
+            "settingRebuildPath": true,
+            "settingFollowRedirects": "global",
+            "_type": "request"
+        },
+        {
+            "_id": "req_d9b16b51ec8c4e309341b5be75f13ff9",
+            "parentId": "fld_43f8f26ca38c45f8a300d86fb94035b4",
+            "modified": 1700000000000,
+            "created": 1700000000000,
+            "url": "{{ base_url }}/auth/me",
+            "name": "GET /me",
+            "description": "Auto-generated for routes",
+            "method": "GET",
+            "body": {},
+            "parameters": [],
+            "headers": [
+                {
+                    "name": "Authorization",
+                    "value": "Bearer {{ access_token }}"
+                },
+                {
+                    "name": "Content-Type",
+                    "value": "application/json"
+                }
+            ],
+            "authentication": {},
+            "metaSortKey": -1700000000000,
+            "isPrivate": false,
+            "settingStoreCookies": true,
+            "settingSendCookies": true,
+            "settingDisableRenderRequestBody": false,
+            "settingEncodeUrl": true,
+            "settingRebuildPath": true,
+            "settingFollowRedirects": "global",
+            "_type": "request"
+        },
+        {
+            "_id": "req_5e5c19f1560d433b8277bc43e6196e30",
+            "parentId": "fld_43f8f26ca38c45f8a300d86fb94035b4",
+            "modified": 1700000000000,
+            "created": 1700000000000,
+            "url": "{{ base_url }}/auth/me/theme",
+            "name": "PUT /me/theme",
+            "description": "Auto-generated for routes",
+            "method": "PUT",
+            "body": {
+                "mimeType": "application/json",
+                "text": "{\n\t\"example\": \"value\"\n}"
+            },
+            "parameters": [],
+            "headers": [
+                {
+                    "name": "Authorization",
+                    "value": "Bearer {{ access_token }}"
+                },
+                {
+                    "name": "Content-Type",
+                    "value": "application/json"
+                }
+            ],
+            "authentication": {},
+            "metaSortKey": -1700000000000,
+            "isPrivate": false,
+            "settingStoreCookies": true,
+            "settingSendCookies": true,
+            "settingDisableRenderRequestBody": false,
+            "settingEncodeUrl": true,
+            "settingRebuildPath": true,
+            "settingFollowRedirects": "global",
+            "_type": "request"
+        },
+        {
+            "_id": "fld_84897bef06824f1586e998e9fa3498fd",
+            "parentId": "wrk_685b04376e2248cf8a4ed7aa7bfd7006",
+            "modified": 1700000000000,
+            "created": 1700000000000,
+            "name": "Chamados",
+            "_type": "request_group"
+        },
+        {
+            "_id": "req_1ac519c4e34f4fcb8402218805f7d268",
+            "parentId": "fld_84897bef06824f1586e998e9fa3498fd",
+            "modified": 1700000000000,
+            "created": 1700000000000,
+            "url": "{{ base_url }}/chamados/<int:id_chamado>/anexos",
+            "name": "POST /<int:id_chamado>/anexos",
+            "description": "Auto-generated for chamados",
+            "method": "POST",
+            "body": {
+                "mimeType": "application/json",
+                "text": "{\n\t\"example\": \"value\"\n}"
+            },
+            "parameters": [],
+            "headers": [
+                {
+                    "name": "Authorization",
+                    "value": "Bearer {{ access_token }}"
+                },
+                {
+                    "name": "Content-Type",
+                    "value": "application/json"
+                }
+            ],
+            "authentication": {},
+            "metaSortKey": -1700000000000,
+            "isPrivate": false,
+            "settingStoreCookies": true,
+            "settingSendCookies": true,
+            "settingDisableRenderRequestBody": false,
+            "settingEncodeUrl": true,
+            "settingRebuildPath": true,
+            "settingFollowRedirects": "global",
+            "_type": "request"
+        },
+        {
+            "_id": "req_0aad3daf37bd44beaf0fffcc10ea342f",
+            "parentId": "fld_84897bef06824f1586e998e9fa3498fd",
+            "modified": 1700000000000,
+            "created": 1700000000000,
+            "url": "{{ base_url }}/chamados/<int:id_chamado>/anexos",
+            "name": "GET /<int:id_chamado>/anexos",
+            "description": "Auto-generated for chamados",
+            "method": "GET",
+            "body": {},
+            "parameters": [],
+            "headers": [
+                {
+                    "name": "Authorization",
+                    "value": "Bearer {{ access_token }}"
+                },
+                {
+                    "name": "Content-Type",
+                    "value": "application/json"
+                }
+            ],
+            "authentication": {},
+            "metaSortKey": -1700000000000,
+            "isPrivate": false,
+            "settingStoreCookies": true,
+            "settingSendCookies": true,
+            "settingDisableRenderRequestBody": false,
+            "settingEncodeUrl": true,
+            "settingRebuildPath": true,
+            "settingFollowRedirects": "global",
+            "_type": "request"
+        },
+        {
+            "_id": "req_4cb8d72e68304ce5b3eb0c34d5a351d4",
+            "parentId": "fld_84897bef06824f1586e998e9fa3498fd",
+            "modified": 1700000000000,
+            "created": 1700000000000,
+            "url": "{{ base_url }}/chamados/anexos/<int:id_anexo>",
+            "name": "DELETE /anexos/<int:id_anexo>",
+            "description": "Auto-generated for chamados",
+            "method": "DELETE",
+            "body": {},
+            "parameters": [],
+            "headers": [
+                {
+                    "name": "Authorization",
+                    "value": "Bearer {{ access_token }}"
+                },
+                {
+                    "name": "Content-Type",
+                    "value": "application/json"
+                }
+            ],
+            "authentication": {},
+            "metaSortKey": -1700000000000,
+            "isPrivate": false,
+            "settingStoreCookies": true,
+            "settingSendCookies": true,
+            "settingDisableRenderRequestBody": false,
+            "settingEncodeUrl": true,
+            "settingRebuildPath": true,
+            "settingFollowRedirects": "global",
+            "_type": "request"
+        },
+        {
+            "_id": "req_06d769db45e148e09bd736576da0d31c",
+            "parentId": "fld_84897bef06824f1586e998e9fa3498fd",
+            "modified": 1700000000000,
+            "created": 1700000000000,
+            "url": "{{ base_url }}/chamados/stats",
+            "name": "GET /stats",
+            "description": "Auto-generated for chamados",
+            "method": "GET",
+            "body": {},
+            "parameters": [],
+            "headers": [
+                {
+                    "name": "Authorization",
+                    "value": "Bearer {{ access_token }}"
+                },
+                {
+                    "name": "Content-Type",
+                    "value": "application/json"
+                }
+            ],
+            "authentication": {},
+            "metaSortKey": -1700000000000,
+            "isPrivate": false,
+            "settingStoreCookies": true,
+            "settingSendCookies": true,
+            "settingDisableRenderRequestBody": false,
+            "settingEncodeUrl": true,
+            "settingRebuildPath": true,
+            "settingFollowRedirects": "global",
+            "_type": "request"
+        },
+        {
+            "_id": "req_6ca1c09297df45d3b4cf9c78303b0371",
+            "parentId": "fld_84897bef06824f1586e998e9fa3498fd",
+            "modified": 1700000000000,
+            "created": 1700000000000,
+            "url": "{{ base_url }}/chamados/<int:id_chamado>",
+            "name": "GET /<int:id_chamado>",
+            "description": "Auto-generated for chamados",
+            "method": "GET",
+            "body": {},
+            "parameters": [],
+            "headers": [
+                {
+                    "name": "Authorization",
+                    "value": "Bearer {{ access_token }}"
+                },
+                {
+                    "name": "Content-Type",
+                    "value": "application/json"
+                }
+            ],
+            "authentication": {},
+            "metaSortKey": -1700000000000,
+            "isPrivate": false,
+            "settingStoreCookies": true,
+            "settingSendCookies": true,
+            "settingDisableRenderRequestBody": false,
+            "settingEncodeUrl": true,
+            "settingRebuildPath": true,
+            "settingFollowRedirects": "global",
+            "_type": "request"
+        },
+        {
+            "_id": "req_1d13323141fd43a8b559ad83f7bd8f1d",
+            "parentId": "fld_84897bef06824f1586e998e9fa3498fd",
+            "modified": 1700000000000,
+            "created": 1700000000000,
+            "url": "{{ base_url }}/chamados/<int:id_chamado>",
+            "name": "PUT /<int:id_chamado>",
+            "description": "Auto-generated for chamados",
+            "method": "PUT",
+            "body": {
+                "mimeType": "application/json",
+                "text": "{\n\t\"example\": \"value\"\n}"
+            },
+            "parameters": [],
+            "headers": [
+                {
+                    "name": "Authorization",
+                    "value": "Bearer {{ access_token }}"
+                },
+                {
+                    "name": "Content-Type",
+                    "value": "application/json"
+                }
+            ],
+            "authentication": {},
+            "metaSortKey": -1700000000000,
+            "isPrivate": false,
+            "settingStoreCookies": true,
+            "settingSendCookies": true,
+            "settingDisableRenderRequestBody": false,
+            "settingEncodeUrl": true,
+            "settingRebuildPath": true,
+            "settingFollowRedirects": "global",
+            "_type": "request"
+        },
+        {
+            "_id": "req_9cb638fe182542b2be97f0fc5d4240da",
+            "parentId": "fld_84897bef06824f1586e998e9fa3498fd",
+            "modified": 1700000000000,
+            "created": 1700000000000,
+            "url": "{{ base_url }}/chamados/<int:id_chamado>",
+            "name": "DELETE /<int:id_chamado>",
+            "description": "Auto-generated for chamados",
+            "method": "DELETE",
+            "body": {},
+            "parameters": [],
+            "headers": [
+                {
+                    "name": "Authorization",
+                    "value": "Bearer {{ access_token }}"
+                },
+                {
+                    "name": "Content-Type",
+                    "value": "application/json"
+                }
+            ],
+            "authentication": {},
+            "metaSortKey": -1700000000000,
+            "isPrivate": false,
+            "settingStoreCookies": true,
+            "settingSendCookies": true,
+            "settingDisableRenderRequestBody": false,
+            "settingEncodeUrl": true,
+            "settingRebuildPath": true,
+            "settingFollowRedirects": "global",
+            "_type": "request"
+        },
+        {
+            "_id": "req_a6e6fb2a420e41eda9bdea7efcbfa408",
+            "parentId": "fld_84897bef06824f1586e998e9fa3498fd",
+            "modified": 1700000000000,
+            "created": 1700000000000,
+            "url": "{{ base_url }}/chamados/<int:id_chamado>/restore",
+            "name": "PUT /<int:id_chamado>/restore",
+            "description": "Auto-generated for chamados",
+            "method": "PUT",
+            "body": {
+                "mimeType": "application/json",
+                "text": "{\n\t\"example\": \"value\"\n}"
+            },
+            "parameters": [],
+            "headers": [
+                {
+                    "name": "Authorization",
+                    "value": "Bearer {{ access_token }}"
+                },
+                {
+                    "name": "Content-Type",
+                    "value": "application/json"
+                }
+            ],
+            "authentication": {},
+            "metaSortKey": -1700000000000,
+            "isPrivate": false,
+            "settingStoreCookies": true,
+            "settingSendCookies": true,
+            "settingDisableRenderRequestBody": false,
+            "settingEncodeUrl": true,
+            "settingRebuildPath": true,
+            "settingFollowRedirects": "global",
+            "_type": "request"
+        },
+        {
+            "_id": "req_043d9cd7f062498199c4916bc4eb1ae5",
+            "parentId": "fld_84897bef06824f1586e998e9fa3498fd",
+            "modified": 1700000000000,
+            "created": 1700000000000,
+            "url": "{{ base_url }}/chamados/<int:id_chamado>/logs",
+            "name": "GET /<int:id_chamado>/logs",
+            "description": "Auto-generated for chamados",
+            "method": "GET",
+            "body": {},
+            "parameters": [],
+            "headers": [
+                {
+                    "name": "Authorization",
+                    "value": "Bearer {{ access_token }}"
+                },
+                {
+                    "name": "Content-Type",
+                    "value": "application/json"
+                }
+            ],
+            "authentication": {},
+            "metaSortKey": -1700000000000,
+            "isPrivate": false,
+            "settingStoreCookies": true,
+            "settingSendCookies": true,
+            "settingDisableRenderRequestBody": false,
+            "settingEncodeUrl": true,
+            "settingRebuildPath": true,
+            "settingFollowRedirects": "global",
+            "_type": "request"
+        },
+        {
+            "_id": "req_dcdf44db41a040828f22204fe892177b",
+            "parentId": "fld_84897bef06824f1586e998e9fa3498fd",
+            "modified": 1700000000000,
+            "created": 1700000000000,
+            "url": "{{ base_url }}/chamados/<int:id_chamado>/comentarios",
+            "name": "POST /<int:id_chamado>/comentarios",
+            "description": "Auto-generated for chamados",
+            "method": "POST",
+            "body": {
+                "mimeType": "application/json",
+                "text": "{\n\t\"example\": \"value\"\n}"
+            },
+            "parameters": [],
+            "headers": [
+                {
+                    "name": "Authorization",
+                    "value": "Bearer {{ access_token }}"
+                },
+                {
+                    "name": "Content-Type",
+                    "value": "application/json"
+                }
+            ],
+            "authentication": {},
+            "metaSortKey": -1700000000000,
+            "isPrivate": false,
+            "settingStoreCookies": true,
+            "settingSendCookies": true,
+            "settingDisableRenderRequestBody": false,
+            "settingEncodeUrl": true,
+            "settingRebuildPath": true,
+            "settingFollowRedirects": "global",
+            "_type": "request"
+        },
+        {
+            "_id": "req_4b57045ab7214f4a925b28b646ad6dad",
+            "parentId": "fld_84897bef06824f1586e998e9fa3498fd",
+            "modified": 1700000000000,
+            "created": 1700000000000,
+            "url": "{{ base_url }}/chamados/ativos",
+            "name": "GET /ativos",
+            "description": "Auto-generated for chamados",
+            "method": "GET",
+            "body": {},
+            "parameters": [],
+            "headers": [
+                {
+                    "name": "Authorization",
+                    "value": "Bearer {{ access_token }}"
+                },
+                {
+                    "name": "Content-Type",
+                    "value": "application/json"
+                }
+            ],
+            "authentication": {},
+            "metaSortKey": -1700000000000,
+            "isPrivate": false,
+            "settingStoreCookies": true,
+            "settingSendCookies": true,
+            "settingDisableRenderRequestBody": false,
+            "settingEncodeUrl": true,
+            "settingRebuildPath": true,
+            "settingFollowRedirects": "global",
+            "_type": "request"
+        },
+        {
+            "_id": "req_58581c11492346e580a0565444e2b5a6",
+            "parentId": "fld_84897bef06824f1586e998e9fa3498fd",
+            "modified": 1700000000000,
+            "created": 1700000000000,
+            "url": "{{ base_url }}/chamados/comentarios/<int:id_log>",
+            "name": "PUT /comentarios/<int:id_log>",
+            "description": "Auto-generated for chamados",
+            "method": "PUT",
+            "body": {
+                "mimeType": "application/json",
+                "text": "{\n\t\"example\": \"value\"\n}"
+            },
+            "parameters": [],
+            "headers": [
+                {
+                    "name": "Authorization",
+                    "value": "Bearer {{ access_token }}"
+                },
+                {
+                    "name": "Content-Type",
+                    "value": "application/json"
+                }
+            ],
+            "authentication": {},
+            "metaSortKey": -1700000000000,
+            "isPrivate": false,
+            "settingStoreCookies": true,
+            "settingSendCookies": true,
+            "settingDisableRenderRequestBody": false,
+            "settingEncodeUrl": true,
+            "settingRebuildPath": true,
+            "settingFollowRedirects": "global",
+            "_type": "request"
+        },
+        {
+            "_id": "req_562bf44a31a64170b4744c53f94fc29d",
+            "parentId": "fld_84897bef06824f1586e998e9fa3498fd",
+            "modified": 1700000000000,
+            "created": 1700000000000,
+            "url": "{{ base_url }}/chamados/comentarios/<int:id_log>",
+            "name": "DELETE /comentarios/<int:id_log>",
+            "description": "Auto-generated for chamados",
+            "method": "DELETE",
+            "body": {},
+            "parameters": [],
+            "headers": [
+                {
+                    "name": "Authorization",
+                    "value": "Bearer {{ access_token }}"
+                },
+                {
+                    "name": "Content-Type",
+                    "value": "application/json"
+                }
+            ],
+            "authentication": {},
+            "metaSortKey": -1700000000000,
+            "isPrivate": false,
+            "settingStoreCookies": true,
+            "settingSendCookies": true,
+            "settingDisableRenderRequestBody": false,
+            "settingEncodeUrl": true,
+            "settingRebuildPath": true,
+            "settingFollowRedirects": "global",
+            "_type": "request"
+        },
+        {
+            "_id": "fld_526c464d371b40bab3303fc136e0aa7c",
+            "parentId": "wrk_685b04376e2248cf8a4ed7aa7bfd7006",
+            "modified": 1700000000000,
+            "created": 1700000000000,
+            "name": "Clientes",
+            "_type": "request_group"
+        },
+        {
+            "_id": "req_f7ea137e36874cd1b74f25a2e868508d",
+            "parentId": "fld_526c464d371b40bab3303fc136e0aa7c",
+            "modified": 1700000000000,
+            "created": 1700000000000,
+            "url": "{{ base_url }}/clientes/search",
+            "name": "GET /search",
+            "description": "Auto-generated for clientes",
+            "method": "GET",
+            "body": {},
+            "parameters": [],
+            "headers": [
+                {
+                    "name": "Authorization",
+                    "value": "Bearer {{ access_token }}"
+                },
+                {
+                    "name": "Content-Type",
+                    "value": "application/json"
+                }
+            ],
+            "authentication": {},
+            "metaSortKey": -1700000000000,
+            "isPrivate": false,
+            "settingStoreCookies": true,
+            "settingSendCookies": true,
+            "settingDisableRenderRequestBody": false,
+            "settingEncodeUrl": true,
+            "settingRebuildPath": true,
+            "settingFollowRedirects": "global",
+            "_type": "request"
+        },
+        {
+            "_id": "req_07fd3c8c27e54c68a3cccb589bc936ac",
+            "parentId": "fld_526c464d371b40bab3303fc136e0aa7c",
+            "modified": 1700000000000,
+            "created": 1700000000000,
+            "url": "{{ base_url }}/clientes/<int:id_cliente>",
+            "name": "GET /<int:id_cliente>",
+            "description": "Auto-generated for clientes",
+            "method": "GET",
+            "body": {},
+            "parameters": [],
+            "headers": [
+                {
+                    "name": "Authorization",
+                    "value": "Bearer {{ access_token }}"
+                },
+                {
+                    "name": "Content-Type",
+                    "value": "application/json"
+                }
+            ],
+            "authentication": {},
+            "metaSortKey": -1700000000000,
+            "isPrivate": false,
+            "settingStoreCookies": true,
+            "settingSendCookies": true,
+            "settingDisableRenderRequestBody": false,
+            "settingEncodeUrl": true,
+            "settingRebuildPath": true,
+            "settingFollowRedirects": "global",
+            "_type": "request"
+        },
+        {
+            "_id": "req_8fdbf670773d472fb52e47e619f13011",
+            "parentId": "fld_526c464d371b40bab3303fc136e0aa7c",
+            "modified": 1700000000000,
+            "created": 1700000000000,
+            "url": "{{ base_url }}/clientes/<int:id_cliente>",
+            "name": "PUT /<int:id_cliente>",
+            "description": "Auto-generated for clientes",
+            "method": "PUT",
+            "body": {
+                "mimeType": "application/json",
+                "text": "{\n\t\"example\": \"value\"\n}"
+            },
+            "parameters": [],
+            "headers": [
+                {
+                    "name": "Authorization",
+                    "value": "Bearer {{ access_token }}"
+                },
+                {
+                    "name": "Content-Type",
+                    "value": "application/json"
+                }
+            ],
+            "authentication": {},
+            "metaSortKey": -1700000000000,
+            "isPrivate": false,
+            "settingStoreCookies": true,
+            "settingSendCookies": true,
+            "settingDisableRenderRequestBody": false,
+            "settingEncodeUrl": true,
+            "settingRebuildPath": true,
+            "settingFollowRedirects": "global",
+            "_type": "request"
+        },
+        {
+            "_id": "req_0ddbae6158414189ab5d0408c5348b6e",
+            "parentId": "fld_526c464d371b40bab3303fc136e0aa7c",
+            "modified": 1700000000000,
+            "created": 1700000000000,
+            "url": "{{ base_url }}/clientes/<int:id_cliente>",
+            "name": "DELETE /<int:id_cliente>",
+            "description": "Auto-generated for clientes",
+            "method": "DELETE",
+            "body": {},
+            "parameters": [],
+            "headers": [
+                {
+                    "name": "Authorization",
+                    "value": "Bearer {{ access_token }}"
+                },
+                {
+                    "name": "Content-Type",
+                    "value": "application/json"
+                }
+            ],
+            "authentication": {},
+            "metaSortKey": -1700000000000,
+            "isPrivate": false,
+            "settingStoreCookies": true,
+            "settingSendCookies": true,
+            "settingDisableRenderRequestBody": false,
+            "settingEncodeUrl": true,
+            "settingRebuildPath": true,
+            "settingFollowRedirects": "global",
+            "_type": "request"
+        },
+        {
+            "_id": "req_e23775a006104cb0bbe6ddfdd0e12b40",
+            "parentId": "fld_526c464d371b40bab3303fc136e0aa7c",
+            "modified": 1700000000000,
+            "created": 1700000000000,
+            "url": "{{ base_url }}/clientes/<int:id_cliente>/usinas",
+            "name": "POST /<int:id_cliente>/usinas",
+            "description": "Auto-generated for clientes",
+            "method": "POST",
+            "body": {
+                "mimeType": "application/json",
+                "text": "{\n\t\"example\": \"value\"\n}"
+            },
+            "parameters": [],
+            "headers": [
+                {
+                    "name": "Authorization",
+                    "value": "Bearer {{ access_token }}"
+                },
+                {
+                    "name": "Content-Type",
+                    "value": "application/json"
+                }
+            ],
+            "authentication": {},
+            "metaSortKey": -1700000000000,
+            "isPrivate": false,
+            "settingStoreCookies": true,
+            "settingSendCookies": true,
+            "settingDisableRenderRequestBody": false,
+            "settingEncodeUrl": true,
+            "settingRebuildPath": true,
+            "settingFollowRedirects": "global",
+            "_type": "request"
+        },
+        {
+            "_id": "req_368ef6d8c974445dbb4bd083b23e444a",
+            "parentId": "fld_526c464d371b40bab3303fc136e0aa7c",
+            "modified": 1700000000000,
+            "created": 1700000000000,
+            "url": "{{ base_url }}/clientes/<int:id_cliente>/usinas",
+            "name": "GET /<int:id_cliente>/usinas",
+            "description": "Auto-generated for clientes",
+            "method": "GET",
+            "body": {},
+            "parameters": [],
+            "headers": [
+                {
+                    "name": "Authorization",
+                    "value": "Bearer {{ access_token }}"
+                },
+                {
+                    "name": "Content-Type",
+                    "value": "application/json"
+                }
+            ],
+            "authentication": {},
+            "metaSortKey": -1700000000000,
+            "isPrivate": false,
+            "settingStoreCookies": true,
+            "settingSendCookies": true,
+            "settingDisableRenderRequestBody": false,
+            "settingEncodeUrl": true,
+            "settingRebuildPath": true,
+            "settingFollowRedirects": "global",
+            "_type": "request"
+        },
+        {
+            "_id": "req_870a9fe2a4cd4f4c85d517ab3e428318",
+            "parentId": "fld_526c464d371b40bab3303fc136e0aa7c",
+            "modified": 1700000000000,
+            "created": 1700000000000,
+            "url": "{{ base_url }}/clientes/usinas/<int:id_usina>",
+            "name": "PUT /usinas/<int:id_usina>",
+            "description": "Auto-generated for clientes",
+            "method": "PUT",
+            "body": {
+                "mimeType": "application/json",
+                "text": "{\n\t\"example\": \"value\"\n}"
+            },
+            "parameters": [],
+            "headers": [
+                {
+                    "name": "Authorization",
+                    "value": "Bearer {{ access_token }}"
+                },
+                {
+                    "name": "Content-Type",
+                    "value": "application/json"
+                }
+            ],
+            "authentication": {},
+            "metaSortKey": -1700000000000,
+            "isPrivate": false,
+            "settingStoreCookies": true,
+            "settingSendCookies": true,
+            "settingDisableRenderRequestBody": false,
+            "settingEncodeUrl": true,
+            "settingRebuildPath": true,
+            "settingFollowRedirects": "global",
+            "_type": "request"
+        },
+        {
+            "_id": "req_0845d1ac15f74473ac919da635679dd1",
+            "parentId": "fld_526c464d371b40bab3303fc136e0aa7c",
+            "modified": 1700000000000,
+            "created": 1700000000000,
+            "url": "{{ base_url }}/clientes/usinas/<int:id_usina>",
+            "name": "DELETE /usinas/<int:id_usina>",
+            "description": "Auto-generated for clientes",
+            "method": "DELETE",
+            "body": {},
+            "parameters": [],
+            "headers": [
+                {
+                    "name": "Authorization",
+                    "value": "Bearer {{ access_token }}"
+                },
+                {
+                    "name": "Content-Type",
+                    "value": "application/json"
+                }
+            ],
+            "authentication": {},
+            "metaSortKey": -1700000000000,
+            "isPrivate": false,
+            "settingStoreCookies": true,
+            "settingSendCookies": true,
+            "settingDisableRenderRequestBody": false,
+            "settingEncodeUrl": true,
+            "settingRebuildPath": true,
+            "settingFollowRedirects": "global",
+            "_type": "request"
+        },
+        {
+            "_id": "req_6265980bf5ca4c57ab6b85cf9ce2efd6",
+            "parentId": "fld_526c464d371b40bab3303fc136e0aa7c",
+            "modified": 1700000000000,
+            "created": 1700000000000,
+            "url": "{{ base_url }}/clientes/usinas/cidades",
+            "name": "GET /usinas/cidades",
+            "description": "Auto-generated for clientes",
+            "method": "GET",
+            "body": {},
+            "parameters": [],
+            "headers": [
+                {
+                    "name": "Authorization",
+                    "value": "Bearer {{ access_token }}"
+                },
+                {
+                    "name": "Content-Type",
+                    "value": "application/json"
+                }
+            ],
+            "authentication": {},
+            "metaSortKey": -1700000000000,
+            "isPrivate": false,
+            "settingStoreCookies": true,
+            "settingSendCookies": true,
+            "settingDisableRenderRequestBody": false,
+            "settingEncodeUrl": true,
+            "settingRebuildPath": true,
+            "settingFollowRedirects": "global",
+            "_type": "request"
+        },
+        {
+            "_id": "req_cb07c02be9a34e5e84d3d0f038623e78",
+            "parentId": "fld_526c464d371b40bab3303fc136e0aa7c",
+            "modified": 1700000000000,
+            "created": 1700000000000,
+            "url": "{{ base_url }}/clientes/dashboard/acessos",
+            "name": "GET /dashboard/acessos",
+            "description": "Auto-generated for clientes",
+            "method": "GET",
+            "body": {},
+            "parameters": [],
+            "headers": [
+                {
+                    "name": "Authorization",
+                    "value": "Bearer {{ access_token }}"
+                },
+                {
+                    "name": "Content-Type",
+                    "value": "application/json"
+                }
+            ],
+            "authentication": {},
+            "metaSortKey": -1700000000000,
+            "isPrivate": false,
+            "settingStoreCookies": true,
+            "settingSendCookies": true,
+            "settingDisableRenderRequestBody": false,
+            "settingEncodeUrl": true,
+            "settingRebuildPath": true,
+            "settingFollowRedirects": "global",
+            "_type": "request"
+        },
+        {
+            "_id": "req_0fa525e636cc4ebcb6314a52bf2fbaa2",
+            "parentId": "fld_526c464d371b40bab3303fc136e0aa7c",
+            "modified": 1700000000000,
+            "created": 1700000000000,
+            "url": "{{ base_url }}/clientes/solarz/registrar-acessos",
+            "name": "POST /solarz/registrar-acessos",
+            "description": "Auto-generated for clientes",
+            "method": "POST",
+            "body": {
+                "mimeType": "application/json",
+                "text": "{\n\t\"example\": \"value\"\n}"
+            },
+            "parameters": [],
+            "headers": [
+                {
+                    "name": "Authorization",
+                    "value": "Bearer {{ access_token }}"
+                },
+                {
+                    "name": "Content-Type",
+                    "value": "application/json"
+                }
+            ],
+            "authentication": {},
+            "metaSortKey": -1700000000000,
+            "isPrivate": false,
+            "settingStoreCookies": true,
+            "settingSendCookies": true,
+            "settingDisableRenderRequestBody": false,
+            "settingEncodeUrl": true,
+            "settingRebuildPath": true,
+            "settingFollowRedirects": "global",
+            "_type": "request"
+        },
+        {
+            "_id": "fld_09624c4a8e7441318bfe854ad1078483",
+            "parentId": "wrk_685b04376e2248cf8a4ed7aa7bfd7006",
+            "modified": 1700000000000,
+            "created": 1700000000000,
+            "name": "Configuracoes",
+            "_type": "request_group"
+        },
+        {
+            "_id": "req_93b1897e21194af48e21c1d5816b6d5c",
+            "parentId": "fld_09624c4a8e7441318bfe854ad1078483",
+            "modified": 1700000000000,
+            "created": 1700000000000,
+            "url": "{{ base_url }}/config/opcoes-chamado",
+            "name": "GET /opcoes-chamado",
+            "description": "Auto-generated for configuracoes",
+            "method": "GET",
+            "body": {},
+            "parameters": [],
+            "headers": [
+                {
+                    "name": "Authorization",
+                    "value": "Bearer {{ access_token }}"
+                },
+                {
+                    "name": "Content-Type",
+                    "value": "application/json"
+                }
+            ],
+            "authentication": {},
+            "metaSortKey": -1700000000000,
+            "isPrivate": false,
+            "settingStoreCookies": true,
+            "settingSendCookies": true,
+            "settingDisableRenderRequestBody": false,
+            "settingEncodeUrl": true,
+            "settingRebuildPath": true,
+            "settingFollowRedirects": "global",
+            "_type": "request"
+        },
+        {
+            "_id": "req_59e80fa5a9694a78bca24bbe266b8785",
+            "parentId": "fld_09624c4a8e7441318bfe854ad1078483",
+            "modified": 1700000000000,
+            "created": 1700000000000,
+            "url": "{{ base_url }}/config/opcoes",
+            "name": "POST /opcoes",
+            "description": "Auto-generated for configuracoes",
+            "method": "POST",
+            "body": {
+                "mimeType": "application/json",
+                "text": "{\n\t\"example\": \"value\"\n}"
+            },
+            "parameters": [],
+            "headers": [
+                {
+                    "name": "Authorization",
+                    "value": "Bearer {{ access_token }}"
+                },
+                {
+                    "name": "Content-Type",
+                    "value": "application/json"
+                }
+            ],
+            "authentication": {},
+            "metaSortKey": -1700000000000,
+            "isPrivate": false,
+            "settingStoreCookies": true,
+            "settingSendCookies": true,
+            "settingDisableRenderRequestBody": false,
+            "settingEncodeUrl": true,
+            "settingRebuildPath": true,
+            "settingFollowRedirects": "global",
+            "_type": "request"
+        },
+        {
+            "_id": "req_fbc104dd5c7741c893388ba395c22493",
+            "parentId": "fld_09624c4a8e7441318bfe854ad1078483",
+            "modified": 1700000000000,
+            "created": 1700000000000,
+            "url": "{{ base_url }}/config/opcoes/<int:id_opcao>",
+            "name": "PUT /opcoes/<int:id_opcao>",
+            "description": "Auto-generated for configuracoes",
+            "method": "PUT",
+            "body": {
+                "mimeType": "application/json",
+                "text": "{\n\t\"example\": \"value\"\n}"
+            },
+            "parameters": [],
+            "headers": [
+                {
+                    "name": "Authorization",
+                    "value": "Bearer {{ access_token }}"
+                },
+                {
+                    "name": "Content-Type",
+                    "value": "application/json"
+                }
+            ],
+            "authentication": {},
+            "metaSortKey": -1700000000000,
+            "isPrivate": false,
+            "settingStoreCookies": true,
+            "settingSendCookies": true,
+            "settingDisableRenderRequestBody": false,
+            "settingEncodeUrl": true,
+            "settingRebuildPath": true,
+            "settingFollowRedirects": "global",
+            "_type": "request"
+        },
+        {
+            "_id": "req_0498082dd3b94a029b930ba946781421",
+            "parentId": "fld_09624c4a8e7441318bfe854ad1078483",
+            "modified": 1700000000000,
+            "created": 1700000000000,
+            "url": "{{ base_url }}/config/opcoes/<int:id_opcao>",
+            "name": "DELETE /opcoes/<int:id_opcao>",
+            "description": "Auto-generated for configuracoes",
+            "method": "DELETE",
+            "body": {},
+            "parameters": [],
+            "headers": [
+                {
+                    "name": "Authorization",
+                    "value": "Bearer {{ access_token }}"
+                },
+                {
+                    "name": "Content-Type",
+                    "value": "application/json"
+                }
+            ],
+            "authentication": {},
+            "metaSortKey": -1700000000000,
+            "isPrivate": false,
+            "settingStoreCookies": true,
+            "settingSendCookies": true,
+            "settingDisableRenderRequestBody": false,
+            "settingEncodeUrl": true,
+            "settingRebuildPath": true,
+            "settingFollowRedirects": "global",
+            "_type": "request"
+        },
+        {
+            "_id": "req_942674f646da490098d9f3a556f22b8b",
+            "parentId": "fld_09624c4a8e7441318bfe854ad1078483",
+            "modified": 1700000000000,
+            "created": 1700000000000,
+            "url": "{{ base_url }}/config/orcamento-configs",
+            "name": "GET /orcamento-configs",
+            "description": "Auto-generated for configuracoes",
+            "method": "GET",
+            "body": {},
+            "parameters": [],
+            "headers": [
+                {
+                    "name": "Authorization",
+                    "value": "Bearer {{ access_token }}"
+                },
+                {
+                    "name": "Content-Type",
+                    "value": "application/json"
+                }
+            ],
+            "authentication": {},
+            "metaSortKey": -1700000000000,
+            "isPrivate": false,
+            "settingStoreCookies": true,
+            "settingSendCookies": true,
+            "settingDisableRenderRequestBody": false,
+            "settingEncodeUrl": true,
+            "settingRebuildPath": true,
+            "settingFollowRedirects": "global",
+            "_type": "request"
+        },
+        {
+            "_id": "req_a45c4d199c64417da119cc71a66a807d",
+            "parentId": "fld_09624c4a8e7441318bfe854ad1078483",
+            "modified": 1700000000000,
+            "created": 1700000000000,
+            "url": "{{ base_url }}/config/parametros",
+            "name": "POST /parametros",
+            "description": "Auto-generated for configuracoes",
+            "method": "POST",
+            "body": {
+                "mimeType": "application/json",
+                "text": "{\n\t\"example\": \"value\"\n}"
+            },
+            "parameters": [],
+            "headers": [
+                {
+                    "name": "Authorization",
+                    "value": "Bearer {{ access_token }}"
+                },
+                {
+                    "name": "Content-Type",
+                    "value": "application/json"
+                }
+            ],
+            "authentication": {},
+            "metaSortKey": -1700000000000,
+            "isPrivate": false,
+            "settingStoreCookies": true,
+            "settingSendCookies": true,
+            "settingDisableRenderRequestBody": false,
+            "settingEncodeUrl": true,
+            "settingRebuildPath": true,
+            "settingFollowRedirects": "global",
+            "_type": "request"
+        },
+        {
+            "_id": "req_cf590e8371d348c89108669ae6cd8cdf",
+            "parentId": "fld_09624c4a8e7441318bfe854ad1078483",
+            "modified": 1700000000000,
+            "created": 1700000000000,
+            "url": "{{ base_url }}/config/parametros/<int:id_param>",
+            "name": "PUT /parametros/<int:id_param>",
+            "description": "Auto-generated for configuracoes",
+            "method": "PUT",
+            "body": {
+                "mimeType": "application/json",
+                "text": "{\n\t\"example\": \"value\"\n}"
+            },
+            "parameters": [],
+            "headers": [
+                {
+                    "name": "Authorization",
+                    "value": "Bearer {{ access_token }}"
+                },
+                {
+                    "name": "Content-Type",
+                    "value": "application/json"
+                }
+            ],
+            "authentication": {},
+            "metaSortKey": -1700000000000,
+            "isPrivate": false,
+            "settingStoreCookies": true,
+            "settingSendCookies": true,
+            "settingDisableRenderRequestBody": false,
+            "settingEncodeUrl": true,
+            "settingRebuildPath": true,
+            "settingFollowRedirects": "global",
+            "_type": "request"
+        },
+        {
+            "_id": "req_77472c361faa4f7d8ad45c8ee1df301e",
+            "parentId": "fld_09624c4a8e7441318bfe854ad1078483",
+            "modified": 1700000000000,
+            "created": 1700000000000,
+            "url": "{{ base_url }}/config/parametros/<int:id_param>",
+            "name": "DELETE /parametros/<int:id_param>",
+            "description": "Auto-generated for configuracoes",
+            "method": "DELETE",
+            "body": {},
+            "parameters": [],
+            "headers": [
+                {
+                    "name": "Authorization",
+                    "value": "Bearer {{ access_token }}"
+                },
+                {
+                    "name": "Content-Type",
+                    "value": "application/json"
+                }
+            ],
+            "authentication": {},
+            "metaSortKey": -1700000000000,
+            "isPrivate": false,
+            "settingStoreCookies": true,
+            "settingSendCookies": true,
+            "settingDisableRenderRequestBody": false,
+            "settingEncodeUrl": true,
+            "settingRebuildPath": true,
+            "settingFollowRedirects": "global",
+            "_type": "request"
+        },
+        {
+            "_id": "req_eb4c496792d14cde8922689236e36b11",
+            "parentId": "fld_09624c4a8e7441318bfe854ad1078483",
+            "modified": 1700000000000,
+            "created": 1700000000000,
+            "url": "{{ base_url }}/config/modalidades",
+            "name": "POST /modalidades",
+            "description": "Auto-generated for configuracoes",
+            "method": "POST",
+            "body": {
+                "mimeType": "application/json",
+                "text": "{\n\t\"example\": \"value\"\n}"
+            },
+            "parameters": [],
+            "headers": [
+                {
+                    "name": "Authorization",
+                    "value": "Bearer {{ access_token }}"
+                },
+                {
+                    "name": "Content-Type",
+                    "value": "application/json"
+                }
+            ],
+            "authentication": {},
+            "metaSortKey": -1700000000000,
+            "isPrivate": false,
+            "settingStoreCookies": true,
+            "settingSendCookies": true,
+            "settingDisableRenderRequestBody": false,
+            "settingEncodeUrl": true,
+            "settingRebuildPath": true,
+            "settingFollowRedirects": "global",
+            "_type": "request"
+        },
+        {
+            "_id": "req_ebe792ea6e6549c3b1cdd0f3cb54a7b0",
+            "parentId": "fld_09624c4a8e7441318bfe854ad1078483",
+            "modified": 1700000000000,
+            "created": 1700000000000,
+            "url": "{{ base_url }}/config/modalidades/<int:id_mod>",
+            "name": "PUT /modalidades/<int:id_mod>",
+            "description": "Auto-generated for configuracoes",
+            "method": "PUT",
+            "body": {
+                "mimeType": "application/json",
+                "text": "{\n\t\"example\": \"value\"\n}"
+            },
+            "parameters": [],
+            "headers": [
+                {
+                    "name": "Authorization",
+                    "value": "Bearer {{ access_token }}"
+                },
+                {
+                    "name": "Content-Type",
+                    "value": "application/json"
+                }
+            ],
+            "authentication": {},
+            "metaSortKey": -1700000000000,
+            "isPrivate": false,
+            "settingStoreCookies": true,
+            "settingSendCookies": true,
+            "settingDisableRenderRequestBody": false,
+            "settingEncodeUrl": true,
+            "settingRebuildPath": true,
+            "settingFollowRedirects": "global",
+            "_type": "request"
+        },
+        {
+            "_id": "req_bfa4dfbc10ea49638257ce45bd088d5c",
+            "parentId": "fld_09624c4a8e7441318bfe854ad1078483",
+            "modified": 1700000000000,
+            "created": 1700000000000,
+            "url": "{{ base_url }}/config/modalidades/<int:id_mod>",
+            "name": "DELETE /modalidades/<int:id_mod>",
+            "description": "Auto-generated for configuracoes",
+            "method": "DELETE",
+            "body": {},
+            "parameters": [],
+            "headers": [
+                {
+                    "name": "Authorization",
+                    "value": "Bearer {{ access_token }}"
+                },
+                {
+                    "name": "Content-Type",
+                    "value": "application/json"
+                }
+            ],
+            "authentication": {},
+            "metaSortKey": -1700000000000,
+            "isPrivate": false,
+            "settingStoreCookies": true,
+            "settingSendCookies": true,
+            "settingDisableRenderRequestBody": false,
+            "settingEncodeUrl": true,
+            "settingRebuildPath": true,
+            "settingFollowRedirects": "global",
+            "_type": "request"
+        },
+        {
+            "_id": "fld_410814953f7749babc8453bdd5f91945",
+            "parentId": "wrk_685b04376e2248cf8a4ed7aa7bfd7006",
+            "modified": 1700000000000,
+            "created": 1700000000000,
+            "name": "Integracoes",
+            "_type": "request_group"
+        },
+        {
+            "_id": "req_54652ecb2bc34c67a50752e6f4e00223",
+            "parentId": "fld_410814953f7749babc8453bdd5f91945",
+            "modified": 1700000000000,
+            "created": 1700000000000,
+            "url": "{{ base_url }}/integracoes/solarz/sincronizar-usinas",
+            "name": "POST /solarz/sincronizar-usinas",
+            "description": "Auto-generated for integracoes",
+            "method": "POST",
+            "body": {
+                "mimeType": "application/json",
+                "text": "{\n\t\"example\": \"value\"\n}"
+            },
+            "parameters": [],
+            "headers": [
+                {
+                    "name": "Authorization",
+                    "value": "Bearer {{ access_token }}"
+                },
+                {
+                    "name": "Content-Type",
+                    "value": "application/json"
+                }
+            ],
+            "authentication": {},
+            "metaSortKey": -1700000000000,
+            "isPrivate": false,
+            "settingStoreCookies": true,
+            "settingSendCookies": true,
+            "settingDisableRenderRequestBody": false,
+            "settingEncodeUrl": true,
+            "settingRebuildPath": true,
+            "settingFollowRedirects": "global",
+            "_type": "request"
+        },
+        {
+            "_id": "fld_62d6fda516424be99f2b1e6793e9d55c",
+            "parentId": "wrk_685b04376e2248cf8a4ed7aa7bfd7006",
+            "modified": 1700000000000,
+            "created": 1700000000000,
+            "name": "Lembretes",
+            "_type": "request_group"
+        },
+        {
+            "_id": "req_a05d900b6121445da9c2e1f2dbf7f704",
+            "parentId": "fld_62d6fda516424be99f2b1e6793e9d55c",
+            "modified": 1700000000000,
+            "created": 1700000000000,
+            "url": "{{ base_url }}/lembretes/<int:id_chamado>",
+            "name": "POST /<int:id_chamado>",
+            "description": "Auto-generated for lembretes",
+            "method": "POST",
+            "body": {
+                "mimeType": "application/json",
+                "text": "{\n\t\"example\": \"value\"\n}"
+            },
+            "parameters": [],
+            "headers": [
+                {
+                    "name": "Authorization",
+                    "value": "Bearer {{ access_token }}"
+                },
+                {
+                    "name": "Content-Type",
+                    "value": "application/json"
+                }
+            ],
+            "authentication": {},
+            "metaSortKey": -1700000000000,
+            "isPrivate": false,
+            "settingStoreCookies": true,
+            "settingSendCookies": true,
+            "settingDisableRenderRequestBody": false,
+            "settingEncodeUrl": true,
+            "settingRebuildPath": true,
+            "settingFollowRedirects": "global",
+            "_type": "request"
+        },
+        {
+            "_id": "req_efa441cd0f3449e590410161a406e7da",
+            "parentId": "fld_62d6fda516424be99f2b1e6793e9d55c",
+            "modified": 1700000000000,
+            "created": 1700000000000,
+            "url": "{{ base_url }}/lembretes/pendentes",
+            "name": "GET /pendentes",
+            "description": "Auto-generated for lembretes",
+            "method": "GET",
+            "body": {},
+            "parameters": [],
+            "headers": [
+                {
+                    "name": "Authorization",
+                    "value": "Bearer {{ access_token }}"
+                },
+                {
+                    "name": "Content-Type",
+                    "value": "application/json"
+                }
+            ],
+            "authentication": {},
+            "metaSortKey": -1700000000000,
+            "isPrivate": false,
+            "settingStoreCookies": true,
+            "settingSendCookies": true,
+            "settingDisableRenderRequestBody": false,
+            "settingEncodeUrl": true,
+            "settingRebuildPath": true,
+            "settingFollowRedirects": "global",
+            "_type": "request"
+        },
+        {
+            "_id": "req_0870d1a274734ce4906461b802fd32c8",
+            "parentId": "fld_62d6fda516424be99f2b1e6793e9d55c",
+            "modified": 1700000000000,
+            "created": 1700000000000,
+            "url": "{{ base_url }}/lembretes/<int:id_lembrete>/concluir",
+            "name": "PUT /<int:id_lembrete>/concluir",
+            "description": "Auto-generated for lembretes",
+            "method": "PUT",
+            "body": {
+                "mimeType": "application/json",
+                "text": "{\n\t\"example\": \"value\"\n}"
+            },
+            "parameters": [],
+            "headers": [
+                {
+                    "name": "Authorization",
+                    "value": "Bearer {{ access_token }}"
+                },
+                {
+                    "name": "Content-Type",
+                    "value": "application/json"
+                }
+            ],
+            "authentication": {},
+            "metaSortKey": -1700000000000,
+            "isPrivate": false,
+            "settingStoreCookies": true,
+            "settingSendCookies": true,
+            "settingDisableRenderRequestBody": false,
+            "settingEncodeUrl": true,
+            "settingRebuildPath": true,
+            "settingFollowRedirects": "global",
+            "_type": "request"
+        },
+        {
+            "_id": "fld_60026a04a00d48a5a3fc5e867e9a54f8",
+            "parentId": "wrk_685b04376e2248cf8a4ed7aa7bfd7006",
+            "modified": 1700000000000,
+            "created": 1700000000000,
+            "name": "Logs",
+            "_type": "request_group"
+        },
+        {
+            "_id": "req_b4449076015746a1b0d32e823992fbc8",
+            "parentId": "fld_60026a04a00d48a5a3fc5e867e9a54f8",
+            "modified": 1700000000000,
+            "created": 1700000000000,
+            "url": "{{ base_url }}/logs/<int:log_id>",
+            "name": "PUT /<int:log_id>",
+            "description": "Auto-generated for logs",
+            "method": "PUT",
+            "body": {
+                "mimeType": "application/json",
+                "text": "{\n\t\"example\": \"value\"\n}"
+            },
+            "parameters": [],
+            "headers": [
+                {
+                    "name": "Authorization",
+                    "value": "Bearer {{ access_token }}"
+                },
+                {
+                    "name": "Content-Type",
+                    "value": "application/json"
+                }
+            ],
+            "authentication": {},
+            "metaSortKey": -1700000000000,
+            "isPrivate": false,
+            "settingStoreCookies": true,
+            "settingSendCookies": true,
+            "settingDisableRenderRequestBody": false,
+            "settingEncodeUrl": true,
+            "settingRebuildPath": true,
+            "settingFollowRedirects": "global",
+            "_type": "request"
+        },
+        {
+            "_id": "req_8b8933badcf34222b243b071528c0967",
+            "parentId": "fld_60026a04a00d48a5a3fc5e867e9a54f8",
+            "modified": 1700000000000,
+            "created": 1700000000000,
+            "url": "{{ base_url }}/logs/<int:log_id>",
+            "name": "DELETE /<int:log_id>",
+            "description": "Auto-generated for logs",
+            "method": "DELETE",
+            "body": {},
+            "parameters": [],
+            "headers": [
+                {
+                    "name": "Authorization",
+                    "value": "Bearer {{ access_token }}"
+                },
+                {
+                    "name": "Content-Type",
+                    "value": "application/json"
+                }
+            ],
+            "authentication": {},
+            "metaSortKey": -1700000000000,
+            "isPrivate": false,
+            "settingStoreCookies": true,
+            "settingSendCookies": true,
+            "settingDisableRenderRequestBody": false,
+            "settingEncodeUrl": true,
+            "settingRebuildPath": true,
+            "settingFollowRedirects": "global",
+            "_type": "request"
+        },
+        {
+            "_id": "fld_79b3608bf786452ca204818d5678369f",
+            "parentId": "wrk_685b04376e2248cf8a4ed7aa7bfd7006",
+            "modified": 1700000000000,
+            "created": 1700000000000,
+            "name": "Materiais",
+            "_type": "request_group"
+        },
+        {
+            "_id": "req_9ad2d518400a4b0192ed45fd90351489",
+            "parentId": "fld_79b3608bf786452ca204818d5678369f",
+            "modified": 1700000000000,
+            "created": 1700000000000,
+            "url": "{{ base_url }}/materiais/<int:id_material>",
+            "name": "GET /<int:id_material>",
+            "description": "Auto-generated for materiais",
+            "method": "GET",
+            "body": {},
+            "parameters": [],
+            "headers": [
+                {
+                    "name": "Authorization",
+                    "value": "Bearer {{ access_token }}"
+                },
+                {
+                    "name": "Content-Type",
+                    "value": "application/json"
+                }
+            ],
+            "authentication": {},
+            "metaSortKey": -1700000000000,
+            "isPrivate": false,
+            "settingStoreCookies": true,
+            "settingSendCookies": true,
+            "settingDisableRenderRequestBody": false,
+            "settingEncodeUrl": true,
+            "settingRebuildPath": true,
+            "settingFollowRedirects": "global",
+            "_type": "request"
+        },
+        {
+            "_id": "req_5b653623a8064594a43e3b253bbfc250",
+            "parentId": "fld_79b3608bf786452ca204818d5678369f",
+            "modified": 1700000000000,
+            "created": 1700000000000,
+            "url": "{{ base_url }}/materiais/<int:id_material>",
+            "name": "PUT /<int:id_material>",
+            "description": "Auto-generated for materiais",
+            "method": "PUT",
+            "body": {
+                "mimeType": "application/json",
+                "text": "{\n\t\"example\": \"value\"\n}"
+            },
+            "parameters": [],
+            "headers": [
+                {
+                    "name": "Authorization",
+                    "value": "Bearer {{ access_token }}"
+                },
+                {
+                    "name": "Content-Type",
+                    "value": "application/json"
+                }
+            ],
+            "authentication": {},
+            "metaSortKey": -1700000000000,
+            "isPrivate": false,
+            "settingStoreCookies": true,
+            "settingSendCookies": true,
+            "settingDisableRenderRequestBody": false,
+            "settingEncodeUrl": true,
+            "settingRebuildPath": true,
+            "settingFollowRedirects": "global",
+            "_type": "request"
+        },
+        {
+            "_id": "req_e21d4ac50b5a462cb9934240548be81d",
+            "parentId": "fld_79b3608bf786452ca204818d5678369f",
+            "modified": 1700000000000,
+            "created": 1700000000000,
+            "url": "{{ base_url }}/materiais/<int:id_material>",
+            "name": "DELETE /<int:id_material>",
+            "description": "Auto-generated for materiais",
+            "method": "DELETE",
+            "body": {},
+            "parameters": [],
+            "headers": [
+                {
+                    "name": "Authorization",
+                    "value": "Bearer {{ access_token }}"
+                },
+                {
+                    "name": "Content-Type",
+                    "value": "application/json"
+                }
+            ],
+            "authentication": {},
+            "metaSortKey": -1700000000000,
+            "isPrivate": false,
+            "settingStoreCookies": true,
+            "settingSendCookies": true,
+            "settingDisableRenderRequestBody": false,
+            "settingEncodeUrl": true,
+            "settingRebuildPath": true,
+            "settingFollowRedirects": "global",
+            "_type": "request"
+        },
+        {
+            "_id": "fld_da959d4e8ba5431faacd2b13a17f7c93",
+            "parentId": "wrk_685b04376e2248cf8a4ed7aa7bfd7006",
+            "modified": 1700000000000,
+            "created": 1700000000000,
+            "name": "Orcamentos",
+            "_type": "request_group"
+        },
+        {
+            "_id": "req_4facb47a414147ba9d43c8c257847ae6",
+            "parentId": "fld_da959d4e8ba5431faacd2b13a17f7c93",
+            "modified": 1700000000000,
+            "created": 1700000000000,
+            "url": "{{ base_url }}/orcamentos/calcular-deslocamento",
+            "name": "POST /calcular-deslocamento",
+            "description": "Auto-generated for orcamentos",
+            "method": "POST",
+            "body": {
+                "mimeType": "application/json",
+                "text": "{\n\t\"example\": \"value\"\n}"
+            },
+            "parameters": [],
+            "headers": [
+                {
+                    "name": "Authorization",
+                    "value": "Bearer {{ access_token }}"
+                },
+                {
+                    "name": "Content-Type",
+                    "value": "application/json"
+                }
+            ],
+            "authentication": {},
+            "metaSortKey": -1700000000000,
+            "isPrivate": false,
+            "settingStoreCookies": true,
+            "settingSendCookies": true,
+            "settingDisableRenderRequestBody": false,
+            "settingEncodeUrl": true,
+            "settingRebuildPath": true,
+            "settingFollowRedirects": "global",
+            "_type": "request"
+        },
+        {
+            "_id": "req_2dbe510f3d26441dadd8fc04b6de29ea",
+            "parentId": "fld_da959d4e8ba5431faacd2b13a17f7c93",
+            "modified": 1700000000000,
+            "created": 1700000000000,
+            "url": "{{ base_url }}/orcamentos/calcular-deslocamento",
+            "name": "OPTIONS /calcular-deslocamento",
+            "description": "Auto-generated for orcamentos",
+            "method": "OPTIONS",
+            "body": {},
+            "parameters": [],
+            "headers": [
+                {
+                    "name": "Authorization",
+                    "value": "Bearer {{ access_token }}"
+                },
+                {
+                    "name": "Content-Type",
+                    "value": "application/json"
+                }
+            ],
+            "authentication": {},
+            "metaSortKey": -1700000000000,
+            "isPrivate": false,
+            "settingStoreCookies": true,
+            "settingSendCookies": true,
+            "settingDisableRenderRequestBody": false,
+            "settingEncodeUrl": true,
+            "settingRebuildPath": true,
+            "settingFollowRedirects": "global",
+            "_type": "request"
+        },
+        {
+            "_id": "req_db974a5e4619442f9c82af5106978663",
+            "parentId": "fld_da959d4e8ba5431faacd2b13a17f7c93",
+            "modified": 1700000000000,
+            "created": 1700000000000,
+            "url": "{{ base_url }}/orcamentos/calcular-modalidade",
+            "name": "POST /calcular-modalidade",
+            "description": "Auto-generated for orcamentos",
+            "method": "POST",
+            "body": {
+                "mimeType": "application/json",
+                "text": "{\n\t\"example\": \"value\"\n}"
+            },
+            "parameters": [],
+            "headers": [
+                {
+                    "name": "Authorization",
+                    "value": "Bearer {{ access_token }}"
+                },
+                {
+                    "name": "Content-Type",
+                    "value": "application/json"
+                }
+            ],
+            "authentication": {},
+            "metaSortKey": -1700000000000,
+            "isPrivate": false,
+            "settingStoreCookies": true,
+            "settingSendCookies": true,
+            "settingDisableRenderRequestBody": false,
+            "settingEncodeUrl": true,
+            "settingRebuildPath": true,
+            "settingFollowRedirects": "global",
+            "_type": "request"
+        },
+        {
+            "_id": "req_4407aab8dfda4b3ca9541afd274c19cf",
+            "parentId": "fld_da959d4e8ba5431faacd2b13a17f7c93",
+            "modified": 1700000000000,
+            "created": 1700000000000,
+            "url": "{{ base_url }}/orcamentos/calcular-modalidade",
+            "name": "OPTIONS /calcular-modalidade",
+            "description": "Auto-generated for orcamentos",
+            "method": "OPTIONS",
+            "body": {},
+            "parameters": [],
+            "headers": [
+                {
+                    "name": "Authorization",
+                    "value": "Bearer {{ access_token }}"
+                },
+                {
+                    "name": "Content-Type",
+                    "value": "application/json"
+                }
+            ],
+            "authentication": {},
+            "metaSortKey": -1700000000000,
+            "isPrivate": false,
+            "settingStoreCookies": true,
+            "settingSendCookies": true,
+            "settingDisableRenderRequestBody": false,
+            "settingEncodeUrl": true,
+            "settingRebuildPath": true,
+            "settingFollowRedirects": "global",
+            "_type": "request"
+        },
+        {
+            "_id": "req_75b1b41f27c346ffa8fa0a049b118c6b",
+            "parentId": "fld_da959d4e8ba5431faacd2b13a17f7c93",
+            "modified": 1700000000000,
+            "created": 1700000000000,
+            "url": "{{ base_url }}/orcamentos/<int:id_orcamento>",
+            "name": "GET /<int:id_orcamento>",
+            "description": "Auto-generated for orcamentos",
+            "method": "GET",
+            "body": {},
+            "parameters": [],
+            "headers": [
+                {
+                    "name": "Authorization",
+                    "value": "Bearer {{ access_token }}"
+                },
+                {
+                    "name": "Content-Type",
+                    "value": "application/json"
+                }
+            ],
+            "authentication": {},
+            "metaSortKey": -1700000000000,
+            "isPrivate": false,
+            "settingStoreCookies": true,
+            "settingSendCookies": true,
+            "settingDisableRenderRequestBody": false,
+            "settingEncodeUrl": true,
+            "settingRebuildPath": true,
+            "settingFollowRedirects": "global",
+            "_type": "request"
+        },
+        {
+            "_id": "req_26eaac5c11884b57a16368a561f432f3",
+            "parentId": "fld_da959d4e8ba5431faacd2b13a17f7c93",
+            "modified": 1700000000000,
+            "created": 1700000000000,
+            "url": "{{ base_url }}/orcamentos/<int:id_orcamento>",
+            "name": "PUT /<int:id_orcamento>",
+            "description": "Auto-generated for orcamentos",
+            "method": "PUT",
+            "body": {
+                "mimeType": "application/json",
+                "text": "{\n\t\"example\": \"value\"\n}"
+            },
+            "parameters": [],
+            "headers": [
+                {
+                    "name": "Authorization",
+                    "value": "Bearer {{ access_token }}"
+                },
+                {
+                    "name": "Content-Type",
+                    "value": "application/json"
+                }
+            ],
+            "authentication": {},
+            "metaSortKey": -1700000000000,
+            "isPrivate": false,
+            "settingStoreCookies": true,
+            "settingSendCookies": true,
+            "settingDisableRenderRequestBody": false,
+            "settingEncodeUrl": true,
+            "settingRebuildPath": true,
+            "settingFollowRedirects": "global",
+            "_type": "request"
+        },
+        {
+            "_id": "req_b2a892b7b2a94010a367c96f8d6b2d3f",
+            "parentId": "fld_da959d4e8ba5431faacd2b13a17f7c93",
+            "modified": 1700000000000,
+            "created": 1700000000000,
+            "url": "{{ base_url }}/orcamentos/<int:id_orcamento>",
+            "name": "DELETE /<int:id_orcamento>",
+            "description": "Auto-generated for orcamentos",
+            "method": "DELETE",
+            "body": {},
+            "parameters": [],
+            "headers": [
+                {
+                    "name": "Authorization",
+                    "value": "Bearer {{ access_token }}"
+                },
+                {
+                    "name": "Content-Type",
+                    "value": "application/json"
+                }
+            ],
+            "authentication": {},
+            "metaSortKey": -1700000000000,
+            "isPrivate": false,
+            "settingStoreCookies": true,
+            "settingSendCookies": true,
+            "settingDisableRenderRequestBody": false,
+            "settingEncodeUrl": true,
+            "settingRebuildPath": true,
+            "settingFollowRedirects": "global",
+            "_type": "request"
+        },
+        {
+            "_id": "req_7c1379cf888d4a1083ebd5eb26571d69",
+            "parentId": "fld_da959d4e8ba5431faacd2b13a17f7c93",
+            "modified": 1700000000000,
+            "created": 1700000000000,
+            "url": "{{ base_url }}/orcamentos/<int:id_orcamento>/gerar-os",
+            "name": "POST /<int:id_orcamento>/gerar-os",
+            "description": "Auto-generated for orcamentos",
+            "method": "POST",
+            "body": {
+                "mimeType": "application/json",
+                "text": "{\n\t\"example\": \"value\"\n}"
+            },
+            "parameters": [],
+            "headers": [
+                {
+                    "name": "Authorization",
+                    "value": "Bearer {{ access_token }}"
+                },
+                {
+                    "name": "Content-Type",
+                    "value": "application/json"
+                }
+            ],
+            "authentication": {},
+            "metaSortKey": -1700000000000,
+            "isPrivate": false,
+            "settingStoreCookies": true,
+            "settingSendCookies": true,
+            "settingDisableRenderRequestBody": false,
+            "settingEncodeUrl": true,
+            "settingRebuildPath": true,
+            "settingFollowRedirects": "global",
+            "_type": "request"
+        },
+        {
+            "_id": "fld_c3aaa8c502734e4f8d0deddc3c00cb8a",
+            "parentId": "wrk_685b04376e2248cf8a4ed7aa7bfd7006",
+            "modified": 1700000000000,
+            "created": 1700000000000,
+            "name": "Ordens_servico",
+            "_type": "request_group"
+        },
+        {
+            "_id": "req_959f9234ed9a4ddab16978de2ac263b0",
+            "parentId": "fld_c3aaa8c502734e4f8d0deddc3c00cb8a",
+            "modified": 1700000000000,
+            "created": 1700000000000,
+            "url": "{{ base_url }}/ordens-servico/<int:id_os>",
+            "name": "GET /<int:id_os>",
+            "description": "Auto-generated for ordens_servico",
+            "method": "GET",
+            "body": {},
+            "parameters": [],
+            "headers": [
+                {
+                    "name": "Authorization",
+                    "value": "Bearer {{ access_token }}"
+                },
+                {
+                    "name": "Content-Type",
+                    "value": "application/json"
+                }
+            ],
+            "authentication": {},
+            "metaSortKey": -1700000000000,
+            "isPrivate": false,
+            "settingStoreCookies": true,
+            "settingSendCookies": true,
+            "settingDisableRenderRequestBody": false,
+            "settingEncodeUrl": true,
+            "settingRebuildPath": true,
+            "settingFollowRedirects": "global",
+            "_type": "request"
+        },
+        {
+            "_id": "req_db10ff61881d4cb786f96a3af0d4ec78",
+            "parentId": "fld_c3aaa8c502734e4f8d0deddc3c00cb8a",
+            "modified": 1700000000000,
+            "created": 1700000000000,
+            "url": "{{ base_url }}/ordens-servico/<int:id_os>",
+            "name": "PUT /<int:id_os>",
+            "description": "Auto-generated for ordens_servico",
+            "method": "PUT",
+            "body": {
+                "mimeType": "application/json",
+                "text": "{\n\t\"example\": \"value\"\n}"
+            },
+            "parameters": [],
+            "headers": [
+                {
+                    "name": "Authorization",
+                    "value": "Bearer {{ access_token }}"
+                },
+                {
+                    "name": "Content-Type",
+                    "value": "application/json"
+                }
+            ],
+            "authentication": {},
+            "metaSortKey": -1700000000000,
+            "isPrivate": false,
+            "settingStoreCookies": true,
+            "settingSendCookies": true,
+            "settingDisableRenderRequestBody": false,
+            "settingEncodeUrl": true,
+            "settingRebuildPath": true,
+            "settingFollowRedirects": "global",
+            "_type": "request"
+        },
+        {
+            "_id": "req_527f7eae113b4479bc6d0aa88050d3d2",
+            "parentId": "fld_c3aaa8c502734e4f8d0deddc3c00cb8a",
+            "modified": 1700000000000,
+            "created": 1700000000000,
+            "url": "{{ base_url }}/ordens-servico/<int:id_os>",
+            "name": "DELETE /<int:id_os>",
+            "description": "Auto-generated for ordens_servico",
+            "method": "DELETE",
+            "body": {},
+            "parameters": [],
+            "headers": [
+                {
+                    "name": "Authorization",
+                    "value": "Bearer {{ access_token }}"
+                },
+                {
+                    "name": "Content-Type",
+                    "value": "application/json"
+                }
+            ],
+            "authentication": {},
+            "metaSortKey": -1700000000000,
+            "isPrivate": false,
+            "settingStoreCookies": true,
+            "settingSendCookies": true,
+            "settingDisableRenderRequestBody": false,
+            "settingEncodeUrl": true,
+            "settingRebuildPath": true,
+            "settingFollowRedirects": "global",
+            "_type": "request"
+        },
+        {
+            "_id": "fld_721567997cf04a5aaa0d6120c29be231",
+            "parentId": "wrk_685b04376e2248cf8a4ed7aa7bfd7006",
+            "modified": 1700000000000,
+            "created": 1700000000000,
+            "name": "Servicos",
+            "_type": "request_group"
+        },
+        {
+            "_id": "req_5652e40ed6984a3da2d2e40304f4332c",
+            "parentId": "fld_721567997cf04a5aaa0d6120c29be231",
+            "modified": 1700000000000,
+            "created": 1700000000000,
+            "url": "{{ base_url }}/servicos/<int:id_servico>",
+            "name": "GET /<int:id_servico>",
+            "description": "Auto-generated for servicos",
+            "method": "GET",
+            "body": {},
+            "parameters": [],
+            "headers": [
+                {
+                    "name": "Authorization",
+                    "value": "Bearer {{ access_token }}"
+                },
+                {
+                    "name": "Content-Type",
+                    "value": "application/json"
+                }
+            ],
+            "authentication": {},
+            "metaSortKey": -1700000000000,
+            "isPrivate": false,
+            "settingStoreCookies": true,
+            "settingSendCookies": true,
+            "settingDisableRenderRequestBody": false,
+            "settingEncodeUrl": true,
+            "settingRebuildPath": true,
+            "settingFollowRedirects": "global",
+            "_type": "request"
+        },
+        {
+            "_id": "req_0987c928e39241a5ab68078d079d7ed8",
+            "parentId": "fld_721567997cf04a5aaa0d6120c29be231",
+            "modified": 1700000000000,
+            "created": 1700000000000,
+            "url": "{{ base_url }}/servicos/<int:id_servico>",
+            "name": "PUT /<int:id_servico>",
+            "description": "Auto-generated for servicos",
+            "method": "PUT",
+            "body": {
+                "mimeType": "application/json",
+                "text": "{\n\t\"example\": \"value\"\n}"
+            },
+            "parameters": [],
+            "headers": [
+                {
+                    "name": "Authorization",
+                    "value": "Bearer {{ access_token }}"
+                },
+                {
+                    "name": "Content-Type",
+                    "value": "application/json"
+                }
+            ],
+            "authentication": {},
+            "metaSortKey": -1700000000000,
+            "isPrivate": false,
+            "settingStoreCookies": true,
+            "settingSendCookies": true,
+            "settingDisableRenderRequestBody": false,
+            "settingEncodeUrl": true,
+            "settingRebuildPath": true,
+            "settingFollowRedirects": "global",
+            "_type": "request"
+        },
+        {
+            "_id": "req_dd097a839b2143669a854bf5bd450d30",
+            "parentId": "fld_721567997cf04a5aaa0d6120c29be231",
+            "modified": 1700000000000,
+            "created": 1700000000000,
+            "url": "{{ base_url }}/servicos/<int:id_servico>",
+            "name": "DELETE /<int:id_servico>",
+            "description": "Auto-generated for servicos",
+            "method": "DELETE",
+            "body": {},
+            "parameters": [],
+            "headers": [
+                {
+                    "name": "Authorization",
+                    "value": "Bearer {{ access_token }}"
+                },
+                {
+                    "name": "Content-Type",
+                    "value": "application/json"
+                }
+            ],
+            "authentication": {},
+            "metaSortKey": -1700000000000,
+            "isPrivate": false,
+            "settingStoreCookies": true,
+            "settingSendCookies": true,
+            "settingDisableRenderRequestBody": false,
+            "settingEncodeUrl": true,
+            "settingRebuildPath": true,
+            "settingFollowRedirects": "global",
+            "_type": "request"
+        },
+        {
+            "_id": "fld_023f536110af4cf586696c5aea9082bf",
+            "parentId": "wrk_685b04376e2248cf8a4ed7aa7bfd7006",
+            "modified": 1700000000000,
+            "created": 1700000000000,
+            "name": "Updates",
+            "_type": "request_group"
+        },
+        {
+            "_id": "req_3e09e81f53364164a9902cf2fda5fa03",
+            "parentId": "fld_023f536110af4cf586696c5aea9082bf",
+            "modified": 1700000000000,
+            "created": 1700000000000,
+            "url": "{{ base_url }}/updates/<int:id>",
+            "name": "PUT /<int:id>",
+            "description": "Auto-generated for updates",
+            "method": "PUT",
+            "body": {
+                "mimeType": "application/json",
+                "text": "{\n\t\"example\": \"value\"\n}"
+            },
+            "parameters": [],
+            "headers": [
+                {
+                    "name": "Authorization",
+                    "value": "Bearer {{ access_token }}"
+                },
+                {
+                    "name": "Content-Type",
+                    "value": "application/json"
+                }
+            ],
+            "authentication": {},
+            "metaSortKey": -1700000000000,
+            "isPrivate": false,
+            "settingStoreCookies": true,
+            "settingSendCookies": true,
+            "settingDisableRenderRequestBody": false,
+            "settingEncodeUrl": true,
+            "settingRebuildPath": true,
+            "settingFollowRedirects": "global",
+            "_type": "request"
+        },
+        {
+            "_id": "req_7e50df6fcd60478685dd5f48806fc387",
+            "parentId": "fld_023f536110af4cf586696c5aea9082bf",
+            "modified": 1700000000000,
+            "created": 1700000000000,
+            "url": "{{ base_url }}/updates/<int:id>",
+            "name": "DELETE /<int:id>",
+            "description": "Auto-generated for updates",
+            "method": "DELETE",
+            "body": {},
+            "parameters": [],
+            "headers": [
+                {
+                    "name": "Authorization",
+                    "value": "Bearer {{ access_token }}"
+                },
+                {
+                    "name": "Content-Type",
+                    "value": "application/json"
+                }
+            ],
+            "authentication": {},
+            "metaSortKey": -1700000000000,
+            "isPrivate": false,
+            "settingStoreCookies": true,
+            "settingSendCookies": true,
+            "settingDisableRenderRequestBody": false,
+            "settingEncodeUrl": true,
+            "settingRebuildPath": true,
+            "settingFollowRedirects": "global",
+            "_type": "request"
+        },
+        {
+            "_id": "fld_53dda1aa51f945ea879cec443d7d836a",
+            "parentId": "wrk_685b04376e2248cf8a4ed7aa7bfd7006",
+            "modified": 1700000000000,
+            "created": 1700000000000,
+            "name": "Usinas",
+            "_type": "request_group"
+        },
+        {
+            "_id": "req_c8b3181849e2473192a93e666d80118c",
+            "parentId": "fld_53dda1aa51f945ea879cec443d7d836a",
+            "modified": 1700000000000,
+            "created": 1700000000000,
+            "url": "{{ base_url }}/usinas/<int:id_usina>",
+            "name": "GET /<int:id_usina>",
+            "description": "Auto-generated for usinas",
+            "method": "GET",
+            "body": {},
+            "parameters": [],
+            "headers": [
+                {
+                    "name": "Authorization",
+                    "value": "Bearer {{ access_token }}"
+                },
+                {
+                    "name": "Content-Type",
+                    "value": "application/json"
+                }
+            ],
+            "authentication": {},
+            "metaSortKey": -1700000000000,
+            "isPrivate": false,
+            "settingStoreCookies": true,
+            "settingSendCookies": true,
+            "settingDisableRenderRequestBody": false,
+            "settingEncodeUrl": true,
+            "settingRebuildPath": true,
+            "settingFollowRedirects": "global",
+            "_type": "request"
+        },
+        {
+            "_id": "req_0216e108896847388d5f545a4bf5dd52",
+            "parentId": "fld_53dda1aa51f945ea879cec443d7d836a",
+            "modified": 1700000000000,
+            "created": 1700000000000,
+            "url": "{{ base_url }}/usinas/<int:id_usina>",
+            "name": "PUT /<int:id_usina>",
+            "description": "Auto-generated for usinas",
+            "method": "PUT",
+            "body": {
+                "mimeType": "application/json",
+                "text": "{\n\t\"example\": \"value\"\n}"
+            },
+            "parameters": [],
+            "headers": [
+                {
+                    "name": "Authorization",
+                    "value": "Bearer {{ access_token }}"
+                },
+                {
+                    "name": "Content-Type",
+                    "value": "application/json"
+                }
+            ],
+            "authentication": {},
+            "metaSortKey": -1700000000000,
+            "isPrivate": false,
+            "settingStoreCookies": true,
+            "settingSendCookies": true,
+            "settingDisableRenderRequestBody": false,
+            "settingEncodeUrl": true,
+            "settingRebuildPath": true,
+            "settingFollowRedirects": "global",
+            "_type": "request"
+        },
+        {
+            "_id": "req_b1a49fe15d8446699693b82420b30ef4",
+            "parentId": "fld_53dda1aa51f945ea879cec443d7d836a",
+            "modified": 1700000000000,
+            "created": 1700000000000,
+            "url": "{{ base_url }}/usinas/<int:id_usina>",
+            "name": "DELETE /<int:id_usina>",
+            "description": "Auto-generated for usinas",
+            "method": "DELETE",
+            "body": {},
+            "parameters": [],
+            "headers": [
+                {
+                    "name": "Authorization",
+                    "value": "Bearer {{ access_token }}"
+                },
+                {
+                    "name": "Content-Type",
+                    "value": "application/json"
+                }
+            ],
+            "authentication": {},
+            "metaSortKey": -1700000000000,
+            "isPrivate": false,
+            "settingStoreCookies": true,
+            "settingSendCookies": true,
+            "settingDisableRenderRequestBody": false,
+            "settingEncodeUrl": true,
+            "settingRebuildPath": true,
+            "settingFollowRedirects": "global",
+            "_type": "request"
+        },
+        {
+            "_id": "fld_bcc1b9e95bb94a0b8411691f0a49ef17",
+            "parentId": "wrk_685b04376e2248cf8a4ed7aa7bfd7006",
+            "modified": 1700000000000,
+            "created": 1700000000000,
+            "name": "Usuarios",
+            "_type": "request_group"
+        },
+        {
+            "_id": "req_e695b91a507a47e59619c9e445317d65",
+            "parentId": "fld_bcc1b9e95bb94a0b8411691f0a49ef17",
+            "modified": 1700000000000,
+            "created": 1700000000000,
+            "url": "{{ base_url }}/usuarios/<int:id_usuario>",
+            "name": "GET /<int:id_usuario>",
+            "description": "Auto-generated for usuarios",
+            "method": "GET",
+            "body": {},
+            "parameters": [],
+            "headers": [
+                {
+                    "name": "Authorization",
+                    "value": "Bearer {{ access_token }}"
+                },
+                {
+                    "name": "Content-Type",
+                    "value": "application/json"
+                }
+            ],
+            "authentication": {},
+            "metaSortKey": -1700000000000,
+            "isPrivate": false,
+            "settingStoreCookies": true,
+            "settingSendCookies": true,
+            "settingDisableRenderRequestBody": false,
+            "settingEncodeUrl": true,
+            "settingRebuildPath": true,
+            "settingFollowRedirects": "global",
+            "_type": "request"
+        },
+        {
+            "_id": "req_7a0af18ea84a4a18ac6a7dad5103b0a4",
+            "parentId": "fld_bcc1b9e95bb94a0b8411691f0a49ef17",
+            "modified": 1700000000000,
+            "created": 1700000000000,
+            "url": "{{ base_url }}/usuarios/<int:id_usuario>",
+            "name": "PUT /<int:id_usuario>",
+            "description": "Auto-generated for usuarios",
+            "method": "PUT",
+            "body": {
+                "mimeType": "application/json",
+                "text": "{\n\t\"example\": \"value\"\n}"
+            },
+            "parameters": [],
+            "headers": [
+                {
+                    "name": "Authorization",
+                    "value": "Bearer {{ access_token }}"
+                },
+                {
+                    "name": "Content-Type",
+                    "value": "application/json"
+                }
+            ],
+            "authentication": {},
+            "metaSortKey": -1700000000000,
+            "isPrivate": false,
+            "settingStoreCookies": true,
+            "settingSendCookies": true,
+            "settingDisableRenderRequestBody": false,
+            "settingEncodeUrl": true,
+            "settingRebuildPath": true,
+            "settingFollowRedirects": "global",
+            "_type": "request"
+        },
+        {
+            "_id": "req_8153d32eda5543d3aa2e43895df78a89",
+            "parentId": "fld_bcc1b9e95bb94a0b8411691f0a49ef17",
+            "modified": 1700000000000,
+            "created": 1700000000000,
+            "url": "{{ base_url }}/usuarios/<int:id_usuario>",
+            "name": "DELETE /<int:id_usuario>",
+            "description": "Auto-generated for usuarios",
+            "method": "DELETE",
+            "body": {},
+            "parameters": [],
+            "headers": [
+                {
+                    "name": "Authorization",
+                    "value": "Bearer {{ access_token }}"
+                },
+                {
+                    "name": "Content-Type",
+                    "value": "application/json"
+                }
+            ],
+            "authentication": {},
+            "metaSortKey": -1700000000000,
+            "isPrivate": false,
+            "settingStoreCookies": true,
+            "settingSendCookies": true,
+            "settingDisableRenderRequestBody": false,
+            "settingEncodeUrl": true,
+            "settingRebuildPath": true,
+            "settingFollowRedirects": "global",
+            "_type": "request"
+        },
+        {
+            "_id": "req_acd4a7504e234a588839efb64998830b",
+            "parentId": "fld_bcc1b9e95bb94a0b8411691f0a49ef17",
+            "modified": 1700000000000,
+            "created": 1700000000000,
+            "url": "{{ base_url }}/usuarios/<int:id_usuario>/avatar",
+            "name": "POST /<int:id_usuario>/avatar",
+            "description": "Auto-generated for usuarios",
+            "method": "POST",
+            "body": {
+                "mimeType": "application/json",
+                "text": "{\n\t\"example\": \"value\"\n}"
+            },
+            "parameters": [],
+            "headers": [
+                {
+                    "name": "Authorization",
+                    "value": "Bearer {{ access_token }}"
+                },
+                {
+                    "name": "Content-Type",
+                    "value": "application/json"
+                }
+            ],
+            "authentication": {},
+            "metaSortKey": -1700000000000,
+            "isPrivate": false,
+            "settingStoreCookies": true,
+            "settingSendCookies": true,
+            "settingDisableRenderRequestBody": false,
+            "settingEncodeUrl": true,
+            "settingRebuildPath": true,
+            "settingFollowRedirects": "global",
+            "_type": "request"
+        }
+    ]
+}

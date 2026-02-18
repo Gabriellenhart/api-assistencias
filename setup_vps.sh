@@ -57,6 +57,15 @@ fi
 
 source venv/bin/activate
 pip install --upgrade pip
+
+# Garantir que requirements.txt esteja em UTF-8 (remove UTF-16/BOM)
+if file requirements.txt | grep -q "UTF-16"; then
+    echo "Detectado UTF-16 em requirements.txt. Convertendo para UTF-8..."
+    iconv -f UTF-16 -t UTF-8 requirements.txt -o requirements.txt.tmp && mv requirements.txt.tmp requirements.txt
+fi
+# Remove BOM UTF-8 se existir
+sed -i '1s/^\xEF\xBB\xBF//' requirements.txt
+
 pip install -r requirements.txt
 pip install gunicorn psycopg2-binary
 echo "Dependências Python instaladas."
@@ -94,7 +103,15 @@ DB_PASS_ENCODED=$(python3 -c "import urllib.parse; print(urllib.parse.quote('''$
 
 if [ -f ".env" ]; then
     # Força ambiente de produção
-    sed -i 's/FLASK_ENV=.*/FLASK_ENV=production/' .env
+    sed -i 's/FLASK_ENV=.*/FLASK_DEBUG=0/' .env
+    # Se não existir FLASK_DEBUG mas existir FLASK_ENV, substitui. Se não, adiciona.
+    if ! grep -q "FLASK_DEBUG" .env; then
+         echo "FLASK_DEBUG=0" >> .env
+    fi
+     # Garante FLASK_ENV=production também (para run.py escolher a config certa)
+    if ! grep -q "FLASK_ENV=production" .env; then
+         echo "FLASK_ENV=production" >> .env
+    fi
     
     # Remove configurações antigas de banco para evitar conflito
     sed -i '/DATABASE_URI=/d' .env
@@ -106,7 +123,7 @@ if [ -f ".env" ]; then
     echo "Arquivo .env atualizado para Produção."
 else
     echo "Criando novo arquivo .env..."
-    echo "FLASK_ENV=production" > .env
+    echo "FLASK_DEBUG=0" > .env
     echo "SECRET_KEY='$(openssl rand -hex 32)'" >> .env
     echo "DATABASE_URI='postgresql://$DB_USER:$DB_PASS_ENCODED@localhost/$DB_NAME'" >> .env
 fi
