@@ -1,7 +1,7 @@
-# /api/models/chamado.py (VERSÃO CORRIGIDA)
+# /api/models/chamado.py
 
-from .base import db # <-- CORREÇÃO: Importa de .base
-from sqlalchemy.sql import func 
+from .base import db
+from sqlalchemy.sql import func
 
 class Chamado(db.Model):
     __tablename__ = 'chamados'
@@ -22,6 +22,18 @@ class Chamado(db.Model):
     # Scheduling fields
     tempo_estimado_minutos = db.Column(db.Integer, nullable=True)
     km_estimado = db.Column(db.Float, nullable=True)
+
+    # Planning engine fields
+    # Commitment level: how flexible this OS is for rescheduling
+    commitment_level = db.Column(db.String(20), nullable=False, default='FLEXIVEL')  # FIXA | PREFERENCIAL | FLEXIVEL
+    # Optional client time window (only enforced for FIXA)
+    time_window_start = db.Column(db.Time, nullable=True)
+    time_window_end = db.Column(db.Time, nullable=True)
+
+    # Real-time execution tracking
+    status_execucao = db.Column(db.String(30), nullable=False, default='NAO_INICIADA')  # NAO_INICIADA | EM_EXECUCAO | PAUSADA | CONCLUIDA | PENDENTE_RETORNO
+    tempo_real_min = db.Column(db.Integer, nullable=True)    # cumulative real time (minutes)
+    remaining_work_min = db.Column(db.Integer, nullable=True) # estimated remaining when PENDENTE_RETORNO
     
     logs = db.relationship('ChamadoLog', back_populates='chamado', lazy='dynamic', cascade="all, delete-orphan")
     cliente = db.relationship('Cliente', back_populates='chamados')

@@ -3,14 +3,18 @@ from flask_jwt_extended import jwt_required
 from sqlalchemy import case, func, or_
 import logging
 import traceback
-from datetime import datetime
+from datetime import datetime, date
 
 from .. import db
-from ..models import Chamado, Usina, Cliente, Usuario, OrdenServico, ConfiguracaoOperacional
+from ..models import (
+    Chamado, Usina, Cliente, Usuario, OrdenServico, ConfiguracaoOperacional,
+    PlanejamentoSemana, PlanejamentoDia,
+)
 from ..services.capacity_calculation_service import CapacityCalculationService
 from ..services.rescheduling_service import ReschedulingService
 from ..services.route_optimization_service import RouteOptimizationService
 from ..services.time_estimation_service import TimeEstimationService
+from ..services.scheduling_engine import SchedulingEngine
 
 
 planejamento_bp = Blueprint('planejamento', __name__)
@@ -418,3 +422,208 @@ def configuracoes():
     except Exception as e:
         logging.error(f"Erro ao gerenciar configurações:\n{traceback.format_exc()}")
         return jsonify({"erro": "Erro interno do servidor", "detalhes": str(e)}), 500
+
+
+# ===========================================================================
+# Novos endpoints — Planejador Inteligente
+# ===========================================================================
+
+@planejamento_bp.route('/os', methods=['GET'])
+@jwt_required()
+def listar_os_planejamento():
+    """
+    Lista backlog de OS para o Planejador Inteligente.
+    Fonte oficial: tabela ordens_servico vinculada ao chamado.
+    """
+    try:
+        os_rows = (
+            OrdenServico.query
+            .join(Chamado, OrdenServico.id_chamado == Chamado.id_chamado)
+            .filter(
+                OrdenServico.id_chamado.isnot(None),
+                OrdenServico.status == 'Aberta',
+                Chamado.is_active == True,
+            )
+            .order_by(
+                db.case(
+                    (Chamado.prioridade == 'URGENTE', 1),
+                    (Chamado.prioridade == 'Alta', 2),
+                    (Chamado.prioridade == 'M\u00e9dia', 3),
+                    (Chamado.prioridade == 'Baixa', 4),
+                    else_=5
+                ),
+                Chamado.data_criacao.asc(),
+                OrdenServico.id_orden_servico.desc(),
+            )
+            .all()
+        )
+
+        result = []
+        for os_row in os_rows:
+            c = os_row.chamado
+            if not c:
+                continue
+
+            flags = []
+            has_geo = c.usina and c.usina.latitude and c.usina.longitude
+            if not has_geo:
+                flags.append('missing_geocode')
+            if not c.tempo_estimado_minutos:
+                flags.append('missing_time_estimate')
+
+            result.append({
+                # id mantido como id_chamado para compatibilidade do planejamento atual
+                'id': c.id_chamado,
+                'id_ordem_servico': os_row.id_orden_servico,
+                'id_chamado': c.id_chamado,
+                'titulo': c.titulo,
+                'cliente': c.cliente.nome if c.cliente else None,
+                'cidade': c.usina.cidade if c.usina else None,
+                'lat': float(c.usina.latitude) if has_geo else None,
+                'lng': float(c.usina.longitude) if has_geo else None,
+                'prioridade': c.prioridade,
+                'categoria': c.categoria,
+                'status': os_row.status,
+                'status_chamado': c.status,
+                'commitment_level': c.commitment_level,
+                'time_window_start': c.time_window_start.strftime('%H:%M') if c.time_window_start else None,
+                'time_window_end': c.time_window_end.strftime('%H:%M') if c.time_window_end else None,
+                'tempo_estimado_minutos': c.tempo_estimado_minutos,
+                'status_execucao': c.status_execucao,
+                'plannable': len(flags) == 0,
+                'flags': flags,
+            })
+
+        return jsonify({'os': result, 'total': len(result)})
+
+    except Exception:
+        logging.error(f'Erro ao listar OS para planejamento:\n{traceback.format_exc()}')
+        return jsonify({'erro': 'Erro interno do servidor'}), 500
+
+
+@planejamento_bp.route('/semana/gerar', methods=['POST'])
+@jwt_required()
+def gerar_semana():
+    """
+    Generate (or regenerate) a full week plan.
+
+    Body JSON:
+        {
+            "week_start_date": "YYYY-MM-DD",  # must be a Monday
+            "technician_id": int,
+            "force_regenerate": bool,           # optional, default false
+            "constraints": {                     # optional overrides
+                "work_start_h": 8,
+                "soft_limit_h": 18.5,
+                "lunch_min": 90
+            }
+        }
+    """
+    try:
+        body = request.get_json()
+        if not body:
+            return jsonify({'erro': 'JSON inv\u00e1lido ou ausente'}), 400
+
+        week_str = body.get('week_start_date')
+        technician_id = body.get('technician_id')
+
+        if not week_str or not technician_id:
+            return jsonify({'erro': 'week_start_date e technician_id s\u00e3o obrigat\u00f3rios'}), 400
+
+        try:
+            week_start = date.fromisoformat(week_str)
+        except ValueError:
+            return jsonify({'erro': 'Formato de week_start_date inv\u00e1lido. Use YYYY-MM-DD'}), 400
+
+        if week_start.weekday() != 0:
+            return jsonify({'erro': 'week_start_date deve ser uma segunda-feira (weekday=0)'}), 400
+
+        plan = SchedulingEngine.generate_week_plan(
+            week_start_date=week_start,
+            technician_id=int(technician_id),
+            constraints=body.get('constraints'),
+            force_regenerate=bool(body.get('force_regenerate', False)),
+        )
+        return jsonify(plan), 201
+
+    except ValueError as e:
+        return jsonify({'erro': str(e)}), 400
+    except Exception:
+        logging.error(f'Erro ao gerar semana:\n{traceback.format_exc()}')
+        return jsonify({'erro': 'Erro interno do servidor'}), 500
+
+
+@planejamento_bp.route('/semana', methods=['GET'])
+@jwt_required()
+def buscar_semana():
+    """
+    Retrieve an existing week plan.
+
+    Query params:
+        week_start_date=YYYY-MM-DD
+        technician_id=int (opcional; ausente => visao agregada de todos os tecnicos)
+    """
+    try:
+        week_str = request.args.get('week_start_date')
+        technician_id = request.args.get('technician_id', type=int)
+
+        if not week_str:
+            return jsonify({'erro': 'week_start_date \u00e9 obrigat\u00f3rio'}), 400
+
+        try:
+            week_start = date.fromisoformat(week_str)
+        except ValueError:
+            return jsonify({'erro': 'Formato de week_start_date inv\u00e1lido'}), 400
+
+        view = SchedulingEngine.serialize_week_view(
+            week_start_date=week_start,
+            technician_id=technician_id,
+        )
+        return jsonify(view)
+
+    except ValueError as e:
+        return jsonify({'erro': str(e)}), 404
+    except Exception:
+        logging.error(f'Erro ao buscar semana:\n{traceback.format_exc()}')
+        return jsonify({'erro': 'Erro interno do servidor'}), 500
+
+
+@planejamento_bp.route('/semana/mover', methods=['POST'])
+@jwt_required()
+def mover_os():
+    """
+    Move an OS from one day to another within a week plan and recalculate.
+
+    Body JSON:
+        {
+            "plan_id": int,
+            "os_id": int,
+            "from_date": "YYYY-MM-DD" | null,
+            "to_date": "YYYY-MM-DD" | null,  # null => desagendar para backlog
+            "target_index": int   # optional, 0-based
+        }
+    """
+    try:
+        body = request.get_json()
+        if not body:
+            return jsonify({'erro': 'JSON inv\u00e1lido ou ausente'}), 400
+
+        required = ['plan_id', 'os_id', 'from_date', 'to_date']
+        missing = [f for f in required if f not in body]
+        if missing:
+            return jsonify({'erro': f'Campos obrigat\u00f3rios ausentes: {missing}'}), 400
+
+        plan = SchedulingEngine.move_os(
+            plan_id=int(body['plan_id']),
+            os_id=int(body['os_id']),
+            from_date_str=body['from_date'],
+            to_date_str=body['to_date'],
+            target_index=body.get('target_index'),
+        )
+        return jsonify(plan), 200
+
+    except ValueError as e:
+        return jsonify({'erro': str(e)}), 400
+    except Exception:
+        logging.error(f'Erro ao mover OS:\n{traceback.format_exc()}')
+        return jsonify({'erro': 'Erro interno do servidor'}), 500

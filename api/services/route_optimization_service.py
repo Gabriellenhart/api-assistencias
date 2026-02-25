@@ -30,7 +30,7 @@ class RouteOptimizationService:
         """
         try:
             origem_coords = f"{origem['longitude']},{origem['latitude']}"
-            destino_coords = f"{destino['longitude']},{destino['longitude']}"
+            destino_coords = f"{destino['longitude']},{destino['latitude']}"
             
             url = f"{OSRM_URL}/{origem_coords};{destino_coords}?overview=full&geometries=geojson"
             

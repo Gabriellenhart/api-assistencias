@@ -38,7 +38,7 @@ class OrdemServicoUpdateSchema(Schema):
     """Schema para ATUALIZAR uma OS (PUT)."""
     
     # Lista de status válidos para uma OS
-    VALID_STATUSES = ["Aberta", "Em Andamento", "Concluida", "Cancelada"]
+    VALID_STATUSES = ["Aberta", "Agendado", "Em Andamento", "Concluida", "Cancelada"]
     
     status = fields.Str(validate=validate.OneOf(VALID_STATUSES))
     id_usuario_responsavel = fields.Int(required=False)

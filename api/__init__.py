@@ -19,7 +19,6 @@ migrate = Migrate()
 jwt = JWTManager()
 bcrypt = Bcrypt()
 ma = Marshmallow()
-cors = CORS()
 
 def create_app(config_name=None):
     """
@@ -39,14 +38,14 @@ def create_app(config_name=None):
     ma.init_app(app)
     
     # Configura CORS para aceitar requisições do frontend
-    cors.init_app(app, resources={
-        r"/.*": {
-            "origins": "*",  # Permite todas as origens (ajustar em produção)
-            "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-            "allow_headers": ["Content-Type", "Authorization"],
-            "supports_credentials": True
-        }
-    })
+    CORS(app,
+         resources={r"/*": {
+             "origins": "*",
+             "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
+             "allow_headers": ["Content-Type", "Authorization", "X-Requested-With"],
+         }},
+         automatic_options=True,
+    )
 
     # --- 3. Carregamento de Usuário (Importação DENTRO da função) ---
     @jwt.user_lookup_loader
@@ -120,6 +119,9 @@ def create_app(config_name=None):
     
     from .resources.lembretes import bp as lembretes_bp
     app.register_blueprint(lembretes_bp, url_prefix='/lembretes')
+
+    from .resources.execucao import execucao_bp
+    app.register_blueprint(execucao_bp, url_prefix='/execucao')
     
     # Rota para servir uploads (avatars, anexos, etc.)
     @app.route('/static/uploads/<path:filename>')

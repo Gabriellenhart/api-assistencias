@@ -34,7 +34,7 @@ def listar_ordens_servico():
         joinedload(OrdenServico.usuario)
     ).filter(
         # Filter: Only Active statuses
-        OrdenServico.status.in_(['Aberta', 'Em Andamento', 'Resolvida', 'Concluida'])
+        OrdenServico.status.in_(['Aberta', 'Agendado', 'Em Andamento', 'Resolvida', 'Concluida'])
     ).order_by(OrdenServico.data_criacao.desc())
     
     os_list = query.all()
