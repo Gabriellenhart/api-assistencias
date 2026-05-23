@@ -20,12 +20,43 @@ jwt = JWTManager()
 bcrypt = Bcrypt()
 ma = Marshmallow()
 
+
+def _parse_cors_origins(value, config_name):
+    if not value:
+        if config_name == 'development':
+            return [
+                'http://localhost:5173',
+                'http://127.0.0.1:5173',
+                'http://localhost:3000',
+            ]
+        return []
+
+    origins = [origin.strip() for origin in value.split(',') if origin.strip()]
+    if origins == ['*'] and config_name != 'development':
+        raise RuntimeError("CORS_ORIGINS='*' só é permitido em desenvolvimento.")
+    return origins
+
+
+def _validate_production_env():
+    missing = [
+        name for name in ('SECRET_KEY', 'JWT_SECRET_KEY', 'DATABASE_URI')
+        if not os.getenv(name)
+    ]
+    if missing:
+        raise RuntimeError(
+            "Variáveis obrigatórias ausentes em produção: " + ", ".join(missing)
+        )
+
+
 def create_app(config_name=None):
     """
     Application Factory: Cria e configura a instância da aplicação Flask.
     """
     if config_name is None:
         config_name = os.getenv('FLASK_ENV', 'default')
+
+    if config_name == 'production':
+        _validate_production_env()
 
     app = Flask(__name__, static_folder='static') 
     app.config.from_object(config[config_name])
@@ -38,9 +69,10 @@ def create_app(config_name=None):
     ma.init_app(app)
     
     # Configura CORS para aceitar requisições do frontend
+    cors_origins = _parse_cors_origins(app.config.get('CORS_ORIGINS'), config_name)
     CORS(app,
          resources={r"/*": {
-             "origins": "*",
+             "origins": cors_origins,
              "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
              "allow_headers": ["Content-Type", "Authorization", "X-Requested-With"],
          }},

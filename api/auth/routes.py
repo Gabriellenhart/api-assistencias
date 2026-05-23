@@ -22,7 +22,8 @@ def login():
     Recebe e-mail e senha, retorna tokens de acesso e refresh em caso de sucesso.
     """
     json_data = request.get_json()
-    logging.info(f"Tentativa de login recebida: {json_data}") # Log 1: Dados recebidos
+    email_log = json_data.get('email') if isinstance(json_data, dict) else None
+    logging.info("Tentativa de login recebida para email=%s", email_log)
 
     schema = LoginSchema()
     try:
@@ -42,7 +43,7 @@ def login():
         # Verifica se a senha está correta
         try:
             password_matches = user.check_password(senha_recebida)
-            logging.info(f"Resultado da verificação de senha para ID {user.id_usuario}: {password_matches}") # Log 4: Resultado do check_password
+            logging.info("Credenciais conferidas para ID %s", user.id_usuario)
 
             if password_matches:
                 identity = str(user.id_usuario)

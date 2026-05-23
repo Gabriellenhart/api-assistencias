@@ -1,4 +1,4 @@
-﻿"""
+"""
 SchedulingEngine â€” Motor de Planejamento Inteligente de OS
 
 Responsible for:

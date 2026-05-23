@@ -1,3 +1,75 @@
+# API Assistencias
+
+Backend Flask/PostgreSQL para gerenciamento de chamados e assistencias. O modulo de chamados/assistencias e o nucleo mais estavel usado em producao; outros modulos seguem em desenvolvimento ou refatoracao incremental.
+
+## Stack principal
+
+- Python 3.8+
+- Flask, Flask-SQLAlchemy, Flask-Migrate/Alembic
+- PostgreSQL
+- JWT para autenticacao
+- Marshmallow para validacao/serializacao
+- Pytest para testes
+
+## Configuracao de ambiente
+
+1. Copie `.env.example` para `.env`.
+2. Ajuste `SECRET_KEY`, `JWT_SECRET_KEY`, `DEV_DATABASE_URI` e, em producao, `DATABASE_URI`.
+3. Configure `CORS_ORIGINS` com origens separadas por virgula. Em desenvolvimento, use por exemplo `http://localhost:5173,http://127.0.0.1:5173,http://localhost:3000`.
+4. Configure integracoes, como SolarZ, apenas via variaveis de ambiente.
+
+Uploads reais, logs, backups, dumps, bancos locais e `.env` nao devem ser versionados. O repositorio mantem apenas placeholders como `api/static/uploads/.gitkeep` e `storage/.gitkeep`.
+
+## Instalacao local
+
+```bash
+python -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+```
+
+No Windows PowerShell:
+
+```powershell
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+pip install -r requirements.txt
+```
+
+## Rodar localmente
+
+```bash
+flask --app run.py run --debug
+```
+
+Ou:
+
+```bash
+python run.py
+```
+
+## Migrations
+
+```bash
+flask --app run.py db upgrade
+```
+
+Antes de criar ou alterar migrations, revise o impacto em producao e evite alterar migrations ja aplicadas.
+
+## Testes
+
+```bash
+pytest
+```
+
+Alguns testes dependem de PostgreSQL e de `TEST_DATABASE_URI` configurado.
+
+## Baseline para GitHub
+
+Esta baseline prioriza seguranca minima e limpeza de versionamento: `.env`, uploads reais, logs, backups, dumps e bancos locais ficam ignorados; secrets sao obrigatorios em producao; CORS e integracoes devem ser configurados por ambiente. Mais detalhes em `docs/releases/GITHUB_BASELINE_PREP.md`.
+
+-----
+
 /sistema-assistencia-api/
 |
 ├── api/                             # Pacote principal da aplicação (o "coração" da API)
@@ -291,3 +363,10 @@ Os endpoints para Materiais, Serviços e Inversores seguem o mesmo padrão CRUD.
         "relatorio_tecnico": "Inversor substituído com sucesso. Equipamento antigo recolhido para análise de garantia. Sistema operando normalmente."
     }
     ```
+## Linux/WSL Workflow
+
+Consulte a documentacao em `docs/WSL_QUICKSTART.md` para bootstrap e execucao no WSL.
+
+Documentos de governanca de release/migracao:
+- `docs/PROD_MIGRATION_PHASES.md`
+- `docs/RELEASE_CHECKLIST.md`

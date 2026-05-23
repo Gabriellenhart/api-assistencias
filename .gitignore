@@ -1,15 +1,17 @@
-# Environment variables and secrets
+# Environment variables and local secrets
 .env
 .env.local
 .env.production
 .env.*.local
+!.env.example
 
-# Virtual Environment
+# Virtual environments
 venv/
 venv_api/
 env/
 ENV/
 .venv/
+.venv_ci/
 
 # Python cache and compiled files
 __pycache__/
@@ -18,46 +20,56 @@ __pycache__/
 *.so
 .Python
 
-# Testing
+# Testing and coverage
 .pytest_cache/
 .coverage
+coverage.xml
 htmlcov/
 .tox/
 .nox/
 
-# Database backups
+# Logs
+logs/
+*.log
+scheduler.log
+
+# Backups, dumps and local databases
 backups/
+*.backup
 *.dump
 *.sql
 *.db
 *.sqlite
 *.sqlite3
 
-# Logs
-*.log
-scheduler.log
-logs/
+# Runtime uploads: keep only directory placeholders
+api/static/uploads/**
+!api/static/uploads/
+!api/static/uploads/.gitkeep
+storage/**
+!storage/
+!storage/.gitkeep
 
-# Distribution / Deployment copies
+# Distribution / deployment copies
 dist_webdock/
 dist/
 build/
 *.egg-info/
 
-# IDE and Editor files
+# IDE and editor files
 .vscode/
 .idea/
 *.swp
 *.swo
 *~
-.DS_Store
 
 # OS-specific files
+.DS_Store
 Thumbs.db
 desktop.ini
 
 # Jupyter Notebook
-.ipynb_checkpoints
+.ipynb_checkpoints/
 
 # pyenv
 .python-version
@@ -70,16 +82,9 @@ celerybeat.pid
 instance/
 .webassets-cache
 
-# mypy
+# Type-checker caches
 .mypy_cache/
 .dmypy.json
 dmypy.json
-
-# Pyre type checker
 .pyre/
-
-# pytype static type analyzer
 .pytype/
-
-# Static files
-static/

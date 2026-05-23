@@ -1,62 +1,58 @@
-import schedule
-import time
-import subprocess
 import logging
-import sys
 import os
+import subprocess
+import sys
+import time
 
-# Configuração de Log
+import schedule
+
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - [Scheduler] - %(levelname)s - %(message)s',
     handlers=[
         logging.StreamHandler(sys.stdout),
-        logging.FileHandler("scheduler.log")
-    ]
+        logging.FileHandler('scheduler.log'),
+    ],
 )
 
+
 def run_script(script_path, description):
-    logging.info(f"Iniciando tarefa: {description}")
+    logging.info("Iniciando tarefa: %s", description)
     try:
-        # Usa o mesmo interpretador Python que está rodando o scheduler
         cmd = [sys.executable, script_path]
         result = subprocess.run(cmd, capture_output=True, text=True, check=False)
-        
         if result.returncode == 0:
-            logging.info(f"Tarefa '{description}' concluída com sucesso.")
-            # logging.info(f"Saída: {result.stdout[:200]}...") 
+            logging.info("Tarefa '%s' concluida com sucesso.", description)
         else:
-            logging.error(f"Tarefa '{description}' falhou com código {result.returncode}.")
-            logging.error(f"Erro: {result.stderr}")
-            
-    except Exception as e:
-        logging.error(f"Exceção ao executar '{description}': {e}")
+            logging.error("Tarefa '%s' falhou com codigo %s.", description, result.returncode)
+            logging.error("Erro: %s", result.stderr)
+    except Exception as exc:
+        logging.error("Excecao ao executar '%s': %s", description, exc)
+
 
 def job_solarz_usinas():
-    # Caminho relativo a partir de api_assistências
-    script = os.path.join("scraper", "solarz_sync_usinas.py")
+    script = os.path.join('scraper', 'solarz_sync_usinas.py')
     if os.path.exists(script):
-        run_script(script, "SolarZ Sync Usinas")
+        run_script(script, 'SolarZ Sync Usinas')
     else:
-        logging.error(f"Script não encontrado: {script}")
+        logging.error('Script nao encontrado: %s', script)
+
 
 def job_solarz_clientes():
-    # Caminho relativo a partir de api_assistências
-    script = os.path.join("scraper", "solarz_sync_clientes.py")
+    script = os.path.join('scraper', 'solarz_sync_clientes.py')
     if os.path.exists(script):
-        run_script(script, "SolarZ Sync Clientes")
+        run_script(script, 'SolarZ Sync Clientes')
     else:
-        logging.error(f"Script não encontrado: {script}")
+        logging.error('Script nao encontrado: %s', script)
+
 
 def run_scheduler():
-    logging.info("=== Scheduler Iniciado ===")
-    logging.info("Agendando tarefas para rodar a cada 1 hora.")
-    
-    # Executa uma vez ao iniciar para garantir dados frescos
+    logging.info('=== Scheduler Iniciado ===')
+    logging.info('Agendando tarefas para rodar a cada 1 hora.')
+
     job_solarz_clientes()
     job_solarz_usinas()
 
-    # Agendamento
     schedule.every(1).hours.do(job_solarz_clientes)
     schedule.every(1).hours.do(job_solarz_usinas)
 
@@ -64,7 +60,8 @@ def run_scheduler():
         schedule.run_pending()
         time.sleep(60)
 
-if __name__ == "__main__":
-    # Garante que o CWD é a raiz do projeto (api_assistências)
+
+if __name__ == '__main__':
+    # Ensure cwd is the project root.
     os.chdir(os.path.dirname(os.path.abspath(__file__)))
     run_scheduler()

@@ -10,7 +10,8 @@ server {
         proxy_set_header X-Forwarded-Proto $scheme;
     }
 
-    location /static {
-        alias /var/www/assistencias-api/static;
+    location /static/ {
+        alias /var/www/assistencias-api/api/static/;
+        expires 30d;
     }
 }

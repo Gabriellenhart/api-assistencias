@@ -1,193 +1,211 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # setup_vps.sh
-# Script de automação de infraestrutura para Webdock VPS
-# AVISO: Execute como ROOT ou sudo
+# Provisiona infraestrutura Linux para a API (VPS/Webdock).
+# Execute como root: sudo bash setup_vps.sh
 
-set -e
+set -euo pipefail
 
-# --- Configurações ---
 APP_DIR="/var/www/assistencias-api"
-VENV_DIR="$APP_DIR/venv"
-REPO_FILES="." # Assume que estamos rodando dentro da pasta com os arquivos enviados
+VENV_DIR="${APP_DIR}/venv"
 DB_NAME="assistencias_prod"
 DB_USER="monitoramento"
-# Senha padrão, o script pedirá para mudar
-DB_PASS_DEFAULT="monitoramento@100" 
+DB_PASS_DEFAULT="monitoramento@100"
+BACKUP_HOUR="3"
 
-# Cores
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 RED='\033[0;31m'
 NC='\033[0m'
 
-echo -e "${GREEN}=== Iniciando Setup Automático da API (Webdock) ===${NC}"
+require_root() {
+    if [[ "${EUID}" -ne 0 ]]; then
+        echo -e "${RED}Erro: execute como root (sudo).${NC}"
+        exit 1
+    fi
+}
 
-# 1. Atualização do Sistema
+require_file() {
+    local file="$1"
+    if [[ ! -f "${file}" ]]; then
+        echo -e "${RED}Arquivo obrigatorio nao encontrado: ${file}${NC}"
+        exit 1
+    fi
+}
+
+start_postgres() {
+    if command -v systemctl >/dev/null 2>&1; then
+        systemctl enable --now postgresql
+    else
+        service postgresql start
+    fi
+}
+
+require_root
+
+echo -e "${GREEN}=== Iniciando Setup da API na VPS ===${NC}"
+echo "Diretorio alvo: ${APP_DIR}"
+
+require_file "requirements.txt"
+require_file "assistencias-api.service"
+require_file "nginx-config"
+require_file "run.py"
+
 echo -e "${YELLOW}[1/8] Atualizando pacotes do sistema...${NC}"
-apt update && apt upgrade -y
+export DEBIAN_FRONTEND=noninteractive
+apt update
+apt upgrade -y
 
-# 2. Instalação de Dependências
-echo -e "${YELLOW}[2/8] Instalando dependências (Python, Postgres, Nginx)...${NC}"
-apt install -y python3-pip python3-venv python3-dev libpq-dev postgresql postgresql-contrib nginx curl git acl
+echo -e "${YELLOW}[2/8] Instalando dependencias...${NC}"
+apt install -y \
+    python3-pip python3-venv python3-dev libpq-dev \
+    postgresql postgresql-contrib nginx curl git acl \
+    rsync ca-certificates
 
-# 3. Preparação do Diretório da Aplicação
-echo -e "${YELLOW}[3/8] Configurando diretório da aplicação em $APP_DIR...${NC}"
-mkdir -p $APP_DIR
-# Copia arquivos do diretório atual para o diretório de instalação
-if [ "$(realpath .)" != "$(realpath $APP_DIR)" ]; then
-    cp -r ./* $APP_DIR/
+echo -e "${YELLOW}[3/8] Preparando diretorio da aplicacao...${NC}"
+mkdir -p "${APP_DIR}/backups"
+
+SOURCE_DIR="$(pwd -P)"
+TARGET_DIR="$(realpath "${APP_DIR}")"
+if [[ "${SOURCE_DIR}" != "${TARGET_DIR}" ]]; then
+    rsync -a \
+        --exclude '.git/' \
+        --exclude '.venv/' \
+        --exclude 'venv/' \
+        --exclude '__pycache__/' \
+        --exclude '*.pyc' \
+        --exclude 'backups/' \
+        --exclude 'logs/' \
+        --exclude 'uploads/' \
+        --exclude 'dist_webdock/' \
+        --exclude '.env' \
+        "${SOURCE_DIR}/" "${APP_DIR}/"
 else
-    echo "Rodando dentro do diretório de destino, pulando cópia."
-fi
-# Cria diretório de backups
-mkdir -p $APP_DIR/backups
-# Ajusta permissões iniciais
-chown -R www-data:www-data $APP_DIR
-chmod -R 755 $APP_DIR
-# Adiciona seu usuário ao grupo www-data para facilitar edições (opcional, assume root por enquanto)
-# usermod -aG www-data ubuntu
-
-# 4. Configuração do Python (Venv)
-echo -e "${YELLOW}[4/8] Criando ambiente virtual e instalando dependências Python...${NC}"
-cd $APP_DIR
-if [ ! -d "venv" ]; then
-    python3 -m venv venv
-    echo "Venv criado."
+    echo "Script executado dentro do diretorio de destino; copia ignorada."
 fi
 
-source venv/bin/activate
-pip install --upgrade pip
+chown -R www-data:www-data "${APP_DIR}"
+chmod -R 755 "${APP_DIR}"
 
-# Garantir que requirements.txt esteja em UTF-8 (remove UTF-16/BOM)
+echo -e "${YELLOW}[4/8] Configurando Python e instalando dependencias...${NC}"
+cd "${APP_DIR}"
+
+if [[ ! -d "${VENV_DIR}" ]]; then
+    python3 -m venv "${VENV_DIR}"
+fi
+
 if file requirements.txt | grep -q "UTF-16"; then
-    echo "Detectado UTF-16 em requirements.txt. Convertendo para UTF-8..."
-    iconv -f UTF-16 -t UTF-8 requirements.txt -o requirements.txt.tmp && mv requirements.txt.tmp requirements.txt
+    echo "requirements.txt em UTF-16 detectado; convertendo para UTF-8."
+    iconv -f UTF-16 -t UTF-8 requirements.txt -o requirements.txt.tmp
+    mv requirements.txt.tmp requirements.txt
 fi
-# Remove BOM UTF-8 se existir
 sed -i '1s/^\xEF\xBB\xBF//' requirements.txt
 
-pip install -r requirements.txt
-pip install gunicorn psycopg2-binary
-echo "Dependências Python instaladas."
+"${VENV_DIR}/bin/pip" install --upgrade pip
+"${VENV_DIR}/bin/pip" install -r requirements.txt
 
-# 5. Configuração do Banco de Dados
 echo -e "${YELLOW}[5/8] Configurando PostgreSQL...${NC}"
-# Verifica se o banco já existe
-start_postgres() {
-    service postgresql start
-}
 start_postgres
 
-# Solicita senha segura
 echo ""
-echo -e "${RED}IMPORTANTE: Defina uma senha segura para o banco de dados produção.${NC}"
-read -s -p "Digite a senha para o usuário '$DB_USER': " DB_PASS
+echo -e "${RED}Defina a senha do banco para o usuario '${DB_USER}'.${NC}"
+read -r -s -p "Senha (Enter para padrao inseguro): " DB_PASS
 echo ""
-if [ -z "$DB_PASS" ]; then
-    DB_PASS=$DB_PASS_DEFAULT
-    echo "Usando senha padrão (NÃO RECOMENDADO)."
+if [[ -z "${DB_PASS}" ]]; then
+    DB_PASS="${DB_PASS_DEFAULT}"
+    echo -e "${RED}Aviso: senha padrao em uso. Troque apos instalar.${NC}"
 fi
 
-# Cria usuário e banco se não existirem
-sudo -u postgres psql -tc "SELECT 1 FROM pg_user WHERE usename = '$DB_USER'" | grep -q 1 || sudo -u postgres psql -c "CREATE USER $DB_USER WITH PASSWORD '$DB_PASS';"
-sudo -u postgres psql -tc "SELECT 1 FROM pg_database WHERE datname = '$DB_NAME'" | grep -q 1 || sudo -u postgres psql -c "CREATE DATABASE $DB_NAME OWNER $DB_USER;"
-sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE $DB_NAME TO $DB_USER;"
+sudo -u postgres psql -v ON_ERROR_STOP=1 \
+    --set=db_user="${DB_USER}" \
+    --set=db_pass="${DB_PASS}" \
+    --set=db_name="${DB_NAME}" <<'SQL'
+SELECT format('CREATE ROLE %I LOGIN PASSWORD %L', :'db_user', :'db_pass')
+WHERE NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = :'db_user') \gexec
+
+SELECT format('ALTER ROLE %I WITH PASSWORD %L', :'db_user', :'db_pass') \gexec
+
+SELECT format('CREATE DATABASE %I OWNER %I', :'db_name', :'db_user')
+WHERE NOT EXISTS (SELECT 1 FROM pg_database WHERE datname = :'db_name') \gexec
+
+SELECT format('GRANT ALL PRIVILEGES ON DATABASE %I TO %I', :'db_name', :'db_user') \gexec
+SQL
 
 echo "Banco de dados configurado."
 
-# Atualiza .env com a senha correta
-echo -e "${YELLOW}Atualizando .env com credenciais...${NC}"
+DB_PASS_ENCODED="$("${VENV_DIR}/bin/python" -c "import urllib.parse,sys; print(urllib.parse.quote(sys.argv[1], safe=''))" "${DB_PASS}")"
+DB_URI="postgresql://${DB_USER}:${DB_PASS_ENCODED}@localhost/${DB_NAME}"
 
-# Encode password to avoid URI issues
-DB_PASS_ENCODED=$(python3 -c "import urllib.parse; print(urllib.parse.quote('''$DB_PASS'''))")
-
-if [ -f ".env" ]; then
-    # Força ambiente de produção
-    sed -i 's/FLASK_ENV=.*/FLASK_DEBUG=0/' .env
-    # Se não existir FLASK_DEBUG mas existir FLASK_ENV, substitui. Se não, adiciona.
-    if ! grep -q "FLASK_DEBUG" .env; then
-         echo "FLASK_DEBUG=0" >> .env
-    fi
-     # Garante FLASK_ENV=production também (para run.py escolher a config certa)
-    if ! grep -q "FLASK_ENV=production" .env; then
-         echo "FLASK_ENV=production" >> .env
-    fi
-    
-    # Remove configurações antigas de banco para evitar conflito
-    sed -i '/DATABASE_URI=/d' .env
-    
-    # Adiciona a URI correta de produção
-    echo "" >> .env
-    echo "DATABASE_URI='postgresql://$DB_USER:$DB_PASS_ENCODED@localhost/$DB_NAME'" >> .env
-    
-    echo "Arquivo .env atualizado para Produção."
+if [[ -f ".env" ]]; then
+    cp .env ".env.bak.$(date +%Y%m%d%H%M%S)"
 else
-    echo "Criando novo arquivo .env..."
-    echo "FLASK_DEBUG=0" > .env
-    echo "SECRET_KEY='$(openssl rand -hex 32)'" >> .env
-    echo "DATABASE_URI='postgresql://$DB_USER:$DB_PASS_ENCODED@localhost/$DB_NAME'" >> .env
+    touch .env
 fi
 
-# 6. Configuração do Servidor (Nginx e Systemd)
-echo -e "${YELLOW}[6/8] Configurando Nginx e Systemd...${NC}"
+grep -vE '^(DATABASE_URI|DEV_DATABASE_URI|TEST_DATABASE_URI|FLASK_DEBUG|FLASK_ENV)=' .env > .env.tmp || true
+mv .env.tmp .env
+echo "FLASK_ENV=production" >> .env
+echo "FLASK_DEBUG=0" >> .env
+echo "DATABASE_URI='${DB_URI}'" >> .env
 
-# Cria diretório de logs do Gunicorn
+if ! grep -q '^SECRET_KEY=' .env; then
+    echo "SECRET_KEY='$(openssl rand -hex 32)'" >> .env
+fi
+
+chown www-data:www-data .env
+chmod 640 .env
+
+echo ".env atualizado para producao."
+
+echo -e "${YELLOW}[6/8] Configurando Systemd e Nginx...${NC}"
 mkdir -p /var/log/gunicorn
-# Ajusta permissões para o usuário do serviço (definido no assistencias-api.service como www-data)
 chown -R www-data:www-data /var/log/gunicorn
 
-# --- SSL SETUP (Executar Manualmente) ---
-# Para habilitar HTTPS, rode:
-# apt install -y certbot python3-certbot-nginx
-# certbot --nginx -d monitoramen1.vps.webdock.cloud --non-interactive --agree-tos -m augustolenhart@gmail.com
-# ----------------------------------------
-
-# Systemd
-cp assistencias-api.service /etc/systemd/system/
+cp assistencias-api.service /etc/systemd/system/assistencias-api.service
 systemctl daemon-reload
 systemctl enable assistencias-api
-systemctl restart assistencias-api
 
-# Nginx
 cp nginx-config /etc/nginx/sites-available/assistencias-api
-ln -sf /etc/nginx/sites-available/assistencias-api /etc/nginx/sites-enabled/
-# Remove default se existir
+ln -sf /etc/nginx/sites-available/assistencias-api /etc/nginx/sites-enabled/assistencias-api
 rm -f /etc/nginx/sites-enabled/default
-nginx -t && systemctl restart nginx
+nginx -t
+systemctl restart nginx
 
-# 7. Restauração de Backup (Opcional)
-echo -e "${YELLOW}[7/8] Verificando backups para restauração...${NC}"
-# Procura arquivos .dump na raiz e move para backups/
-mv *backup*.dump backups/ 2>/dev/null || true
-
-DUMP_COUNT=$(ls backups/*.dump 2>/dev/null | wc -l)
-
-if [ "$DUMP_COUNT" != "0" ]; then
-    echo "Encontrados $DUMP_COUNT arquivos de backup."
-    read -p "Deseja restaurar um backup agora? (s/n): " RESTORE_OPT
-    if [ "$RESTORE_OPT" == "s" ]; then
-        echo "Executando script de restauração Python..."
-        # Passa a URI explicitamente usando as variaveis do script para evitar erros de .env antigo
-        export DATABASE_URI="postgresql://$DB_USER:$DB_PASS_ENCODED@localhost/$DB_NAME"
-        python3 restore_database.py
-    fi
-else
-    echo "Nenhum arquivo .dump encontrado para restaurar."
-    echo "Inicializando banco vazio com migrações..."
-    export FLASK_APP=run.py
-    flask db upgrade
+echo -e "${YELLOW}[7/8] Verificando restauracao de backup...${NC}"
+shopt -s nullglob
+incoming_dumps=("${APP_DIR}"/*backup*.dump)
+if (( ${#incoming_dumps[@]} > 0 )); then
+    mv "${incoming_dumps[@]}" "${APP_DIR}/backups/"
 fi
 
-# 8. Automação de Backup (Cron)
-echo -e "${YELLOW}[8/8] Configurando backup diário (Cron)...${NC}"
-BACKUP_CMD="$APP_DIR/venv/bin/python $APP_DIR/backup_database.py >> $APP_DIR/backups/backup.log 2>&1"
-# Adiciona job no cron se não existir (roda as 03:00 am)
-(crontab -l 2>/dev/null | grep -v "backup_database.py"; echo "0 3 * * * $BACKUP_CMD") | crontab -
-echo "Cron job adicionado: Executa backup todo dia às 03:00."
+dump_files=("${APP_DIR}/backups/"*.dump)
+if (( ${#dump_files[@]} > 0 )); then
+    echo "Backups encontrados: ${#dump_files[@]}"
+    read -r -p "Restaurar backup agora? (s/n): " RESTORE_OPT
+    if [[ "${RESTORE_OPT}" == "s" || "${RESTORE_OPT}" == "S" ]]; then
+        export DATABASE_URI="${DB_URI}"
+        "${VENV_DIR}/bin/python" restore_database.py
+    else
+        export FLASK_APP=run.py
+        "${VENV_DIR}/bin/flask" db upgrade
+    fi
+else
+    echo "Nenhum backup encontrado; aplicando migrations."
+    export FLASK_APP=run.py
+    "${VENV_DIR}/bin/flask" db upgrade
+fi
+shopt -u nullglob
 
-# Permissões finais
-chown -R www-data:www-data $APP_DIR
+systemctl restart assistencias-api
 
-echo -e "${GREEN}=== Setup Concluído! ===${NC}"
-echo "Sua API deve estar rodando em http://$(curl -s ifconfig.me) ou no domínio configurado."
-echo "Para verificar status: systemctl status assistencias-api"
+echo -e "${YELLOW}[8/8] Configurando backup diario (cron)...${NC}"
+BACKUP_CMD="${VENV_DIR}/bin/python ${APP_DIR}/backup_database.py >> ${APP_DIR}/backups/backup.log 2>&1"
+(crontab -l 2>/dev/null | grep -v "backup_database.py"; echo "0 ${BACKUP_HOUR} * * * ${BACKUP_CMD}") | crontab -
+
+chown -R www-data:www-data "${APP_DIR}"
+
+PUBLIC_IP="$(curl -s --max-time 5 ifconfig.me || true)"
+echo -e "${GREEN}=== Setup concluido com sucesso ===${NC}"
+if [[ -n "${PUBLIC_IP}" ]]; then
+    echo "API disponivel em: http://${PUBLIC_IP}"
+fi
+echo "Status do servico: systemctl status assistencias-api"
