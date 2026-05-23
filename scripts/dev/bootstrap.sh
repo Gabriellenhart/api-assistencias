@@ -67,9 +67,9 @@ if ! command -v psql >/dev/null 2>&1; then
 Instale o cliente PostgreSQL e crie o banco local manualmente.
 Exemplo:
   sudo apt-get install postgresql postgresql-client
-  sudo -u postgres createuser --createdb --login assistencias
-  sudo -u postgres psql -c "ALTER USER assistencias WITH PASSWORD 'assistencias';"
-  createdb -h localhost -U assistencias assistencias_dev
+  sudo -u postgres createuser --login assistencias_dev
+  sudo -u postgres psql -c "ALTER USER assistencias_dev WITH PASSWORD 'assistencias_dev';"
+  sudo -u postgres createdb -O assistencias_dev assistencias_dev
 MSG
   die "PostgreSQL client indisponivel."
 fi
@@ -109,7 +109,7 @@ then
   cat <<'MSG'
 [dev bootstrap] ajuste DEV_DATABASE_URI em .env e garanta que o banco existe.
 Exemplo recomendado:
-  DEV_DATABASE_URI=postgresql://assistencias:assistencias@localhost:5432/assistencias_dev
+  DEV_DATABASE_URI=postgresql://assistencias_dev:assistencias_dev@localhost:5432/assistencias_dev
 MSG
   exit 1
 fi

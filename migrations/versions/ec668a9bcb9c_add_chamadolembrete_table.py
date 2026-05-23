@@ -86,6 +86,7 @@ def upgrade():
         old_idx_solarz = op.f('ix_usina_cliente_id_solarz')
         old_idx_uc = op.f('ux_usinas_cliente_uc')
         new_idx_solarz = op.f('ix_usinas_cliente_id_solarz')
+        has_cliente_id_solarz = _has_column(inspector, 'usinas', 'cliente_id_solarz')
 
         with op.batch_alter_table('usinas', schema=None) as batch_op:
             if _has_column(inspector, 'usinas', 'dados_planilha'):
@@ -99,6 +100,8 @@ def upgrade():
                 batch_op.drop_index(old_idx_solarz)
             if _has_index(inspector, 'usinas', old_idx_uc):
                 batch_op.drop_index(old_idx_uc, postgresql_where='(uc IS NOT NULL)')
+            if not has_cliente_id_solarz:
+                batch_op.add_column(sa.Column('cliente_id_solarz', sa.BigInteger(), nullable=True))
             if not _has_index(inspector, 'usinas', new_idx_solarz):
                 batch_op.create_index(new_idx_solarz, ['cliente_id_solarz'], unique=False)
 
@@ -114,14 +117,16 @@ def downgrade():
         new_idx_solarz = op.f('ix_usinas_cliente_id_solarz')
         old_idx_uc = op.f('ux_usinas_cliente_uc')
         old_idx_solarz = op.f('ix_usina_cliente_id_solarz')
+        has_cliente_id_solarz = _has_column(inspector, 'usinas', 'cliente_id_solarz')
+        has_uc = _has_column(inspector, 'usinas', 'uc')
 
         with op.batch_alter_table('usinas', schema=None) as batch_op:
             if _has_index(inspector, 'usinas', new_idx_solarz):
                 batch_op.drop_index(new_idx_solarz)
-            if not _has_index(inspector, 'usinas', old_idx_uc):
+            if _has_index(inspector, 'usinas', old_idx_solarz):
+                batch_op.drop_index(old_idx_solarz)
+            if has_uc and not _has_index(inspector, 'usinas', old_idx_uc):
                 batch_op.create_index(old_idx_uc, ['id_cliente', 'uc'], unique=True, postgresql_where='(uc IS NOT NULL)')
-            if not _has_index(inspector, 'usinas', old_idx_solarz):
-                batch_op.create_index(old_idx_solarz, ['cliente_id_solarz'], unique=False)
             if _has_column(inspector, 'usinas', 'dados_planilha'):
                 batch_op.alter_column(
                     'dados_planilha',
@@ -129,6 +134,8 @@ def downgrade():
                     type_=postgresql.JSONB(astext_type=sa.Text()),
                     existing_nullable=True
                 )
+            if has_cliente_id_solarz:
+                batch_op.drop_column('cliente_id_solarz')
 
     if _has_table(inspector, 'clientes_acessos_solarz'):
         new_idx_data = op.f('ix_clientes_acessos_solarz_data_ref')

@@ -15,7 +15,7 @@ Backend Flask/PostgreSQL para gerenciamento de chamados e assistencias. O modulo
 
 ### Requisitos
 
-- Python 3.10+ recomendado.
+- Python 3.10 recomendado no WSL Ubuntu 22.04.
 - PostgreSQL local acessivel.
 - Cliente PostgreSQL (`psql`, `createdb`, `dropdb`) para bootstrap/reset no Linux/WSL.
 - Git e Bash no Linux/WSL. No Windows, PowerShell 5+ ou PowerShell 7.
@@ -25,10 +25,21 @@ Backend Flask/PostgreSQL para gerenciamento de chamados e assistencias. O modulo
 ```bash
 git clone <url-do-repositorio>
 cd api-assistencias
-./scripts/dev/bootstrap.sh
+./scripts/dev_wsl_bootstrap.sh
 ```
 
-O bootstrap cria `.venv`, instala `requirements.txt`, cria `.env` a partir de `.env.example` se necessario, valida a conexao PostgreSQL configurada em `DEV_DATABASE_URI`, roda migrations e executa `scripts/dev/check.sh`.
+O bootstrap WSL instala dependencias de sistema, cria `.venv`, prepara roles e bancos locais, cria/atualiza as URIs locais em `.env`, roda migrations e executa uma validacao basica.
+
+Roles locais padrao:
+
+```text
+DEV_DB_USER=assistencias_dev
+DEV_DB_NAME=assistencias_dev
+TEST_DB_USER=assistencias_test
+TEST_DB_NAME=assistencias_test
+```
+
+O role `assistencias_test` recebe `CREATEDB` apenas no ambiente local para que o `pytest` possa criar bancos temporarios isolados.
 
 No Windows PowerShell:
 
@@ -56,8 +67,8 @@ Uploads reais, logs, backups, dumps, bancos locais e `.env` nao devem ser versio
 Exemplo local:
 
 ```bash
-DEV_DATABASE_URI=postgresql://assistencias:assistencias@localhost:5432/assistencias_dev
-TEST_DATABASE_URI=postgresql://assistencias:assistencias@localhost:5432/assistencias_test
+DEV_DATABASE_URI=postgresql://assistencias_dev:assistencias_dev@localhost:5432/assistencias_dev
+TEST_DATABASE_URI=postgresql://assistencias_test:assistencias_test@localhost:5432/assistencias_test
 ```
 
 ### Rodar a API
@@ -99,6 +110,7 @@ Use somente em desenvolvimento. O script bloqueia `FLASK_ENV=production` e URIs 
 ```
 
 O reset pede confirmacao digitando `RESET`, apaga e recria o banco de `DEV_DATABASE_URI`, roda migrations e orienta a criacao de admin.
+Ele usa administracao local via `sudo -u postgres`, encerra conexoes ativas e recria `assistencias_dev` com owner `assistencias_dev`.
 
 ### Admin inicial
 

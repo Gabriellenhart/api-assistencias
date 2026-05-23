@@ -17,18 +17,23 @@ Este guia descreve o fluxo recomendado para rodar o backend Flask/PostgreSQL do 
 ```bash
 git clone <url-do-repositorio>
 cd api-assistencias
-./scripts/dev/bootstrap.sh
+./scripts/dev_wsl_bootstrap.sh
 ```
 
 O bootstrap:
 
-- valida que esta em Linux/WSL;
+- valida Python 3.10 no WSL/Linux;
+- instala dependencias de sistema quando necessario;
+- inicia PostgreSQL local;
+- garante os roles `assistencias_dev` e `assistencias_test`;
+- garante os bancos `assistencias_dev` e `assistencias_test` com os owners corretos;
+- concede `CREATEDB` ao role local `assistencias_test`, usado pelo pytest para bancos temporarios;
 - cria `.venv` se necessario;
 - instala `requirements.txt`;
-- cria `.env` a partir de `.env.example` se ele ainda nao existir;
-- valida conexao com `DEV_DATABASE_URI` ou `DATABASE_URI`;
-- roda `python -m flask db upgrade`;
-- executa `scripts/dev/check.sh`.
+- cria `.env` a partir de `.env.example` se ele ainda nao existir e atualiza as URIs locais padrao;
+- roda `python -m flask --app run.py db upgrade`;
+- roda `python -m flask --app run.py db current`;
+- executa uma validacao basica de import e `compileall`.
 
 Se o script nao tiver permissao de execucao:
 
@@ -70,8 +75,8 @@ FLASK_ENV=development
 FLASK_DEBUG=1
 SECRET_KEY=change-me-local-secret
 JWT_SECRET_KEY=change-me-local-jwt-secret
-DEV_DATABASE_URI=postgresql://assistencias:assistencias@localhost:5432/assistencias_dev
-TEST_DATABASE_URI=postgresql://assistencias:assistencias@localhost:5432/assistencias_test
+DEV_DATABASE_URI=postgresql://assistencias_dev:assistencias_dev@localhost:5432/assistencias_dev
+TEST_DATABASE_URI=postgresql://assistencias_test:assistencias_test@localhost:5432/assistencias_test
 CORS_ORIGINS=http://localhost:5173,http://127.0.0.1:5173,http://localhost:3000
 ```
 
@@ -79,13 +84,34 @@ Em producao, defina `SECRET_KEY`, `JWT_SECRET_KEY`, `DATABASE_URI` e `CORS_ORIGI
 
 ## Banco local
 
-O bootstrap nao imprime senhas e nao sobrescreve `.env`. Se o banco ainda nao existir, crie manualmente com um usuario local sem segredos reais:
+Padrao local:
+
+```text
+DEV_DB_USER=assistencias_dev
+DEV_DB_PASS=assistencias_dev
+DEV_DB_NAME=assistencias_dev
+TEST_DB_USER=assistencias_test
+TEST_DB_PASS=assistencias_test
+TEST_DB_NAME=assistencias_test
+```
+
+O role `assistencias_test` recebe `CREATEDB` somente no ambiente local para que a fixture do pytest crie bancos temporarios isolados e descarte no teardown.
+
+Se precisar recriar manualmente:
 
 ```bash
-sudo -u postgres createuser --createdb --login assistencias
-sudo -u postgres psql -c "ALTER USER assistencias WITH PASSWORD 'assistencias';"
-createdb -h localhost -U assistencias assistencias_dev
-createdb -h localhost -U assistencias assistencias_test
+sudo -u postgres psql -d postgres -c "CREATE ROLE assistencias_dev LOGIN PASSWORD 'assistencias_dev';"
+sudo -u postgres psql -d postgres -c "CREATE ROLE assistencias_test LOGIN PASSWORD 'assistencias_test' CREATEDB;"
+sudo -u postgres createdb -O assistencias_dev assistencias_dev
+sudo -u postgres createdb -O assistencias_test assistencias_test
+```
+
+Se o banco existir com owner divergente em ambiente local:
+
+```bash
+sudo -u postgres psql -d postgres -c "ALTER DATABASE assistencias_dev OWNER TO assistencias_dev;"
+sudo -u postgres psql -d postgres -c "ALTER DATABASE assistencias_test OWNER TO assistencias_test;"
+sudo -u postgres psql -d postgres -c "ALTER ROLE assistencias_test CREATEDB;"
 ```
 
 Se sua instalacao PostgreSQL usa outro usuario administrativo, adapte os comandos.

@@ -9,6 +9,7 @@ from psycopg2 import sql
 import pytest
 from alembic import command as alembic_command
 from alembic.config import Config as AlembicConfig
+from sqlalchemy import inspect
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
@@ -48,15 +49,19 @@ def _admin_connection_params(base_uri: str) -> dict:
 
 def _create_database(base_uri: str, db_name: str) -> None:
     params = _admin_connection_params(base_uri)
-    with psycopg2.connect(**params) as conn:
+    conn = psycopg2.connect(**params)
+    try:
         conn.autocommit = True
         with conn.cursor() as cur:
             cur.execute(sql.SQL('CREATE DATABASE {}').format(sql.Identifier(db_name)))
+    finally:
+        conn.close()
 
 
 def _drop_database(base_uri: str, db_name: str) -> None:
     params = _admin_connection_params(base_uri)
-    with psycopg2.connect(**params) as conn:
+    conn = psycopg2.connect(**params)
+    try:
         conn.autocommit = True
         with conn.cursor() as cur:
             cur.execute(
@@ -66,6 +71,8 @@ def _drop_database(base_uri: str, db_name: str) -> None:
                 (db_name,),
             )
             cur.execute(sql.SQL('DROP DATABASE IF EXISTS {}').format(sql.Identifier(db_name)))
+    finally:
+        conn.close()
 
 
 def _run_migrations(database_uri: str) -> None:
@@ -77,8 +84,9 @@ def _run_migrations(database_uri: str) -> None:
 
 def _truncate_all_tables() -> None:
     # Keep alembic_version untouched.
+    existing_tables = set(inspect(db.engine).get_table_names())
     for table in reversed(db.metadata.sorted_tables):
-        if table.name == 'alembic_version':
+        if table.name == 'alembic_version' or table.name not in existing_tables:
             continue
         db.session.execute(table.delete())
     db.session.commit()
@@ -98,13 +106,18 @@ def app():
             f'PostgreSQL indisponivel para testes ({exc}). '
             'Inicie o Postgres e configure TEST_DATABASE_URI.'
         )
+    except psycopg2.errors.InsufficientPrivilege as exc:
+        pytest.skip(
+            f'Usuario de TEST_DATABASE_URI sem permissao para criar banco temporario ({exc}). '
+            'No ambiente local WSL, rode ./scripts/dev_wsl_bootstrap.sh para conceder CREATEDB ao role de teste.'
+        )
     os.environ['TEST_DATABASE_URI'] = temp_uri
     os.environ['FLASK_ENV'] = 'testing'
 
     try:
-        _run_migrations(temp_uri)
         flask_app = create_app(config_name='testing')
         with flask_app.app_context():
+            _run_migrations(temp_uri)
             yield flask_app
             db.session.remove()
             db.engine.dispose()
