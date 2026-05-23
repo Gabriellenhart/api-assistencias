@@ -11,7 +11,40 @@ Backend Flask/PostgreSQL para gerenciamento de chamados e assistencias. O modulo
 - Marshmallow para validacao/serializacao
 - Pytest para testes
 
-## Configuracao de ambiente
+## Ambiente de desenvolvimento local
+
+### Requisitos
+
+- Python 3.10+ recomendado.
+- PostgreSQL local acessivel.
+- Cliente PostgreSQL (`psql`, `createdb`, `dropdb`) para bootstrap/reset no Linux/WSL.
+- Git e Bash no Linux/WSL. No Windows, PowerShell 5+ ou PowerShell 7.
+
+### Clonar e configurar
+
+```bash
+git clone <url-do-repositorio>
+cd api-assistencias
+./scripts/dev/bootstrap.sh
+```
+
+O bootstrap cria `.venv`, instala `requirements.txt`, cria `.env` a partir de `.env.example` se necessario, valida a conexao PostgreSQL configurada em `DEV_DATABASE_URI`, roda migrations e executa `scripts/dev/check.sh`.
+
+No Windows PowerShell:
+
+```powershell
+git clone <url-do-repositorio>
+cd api-assistencias
+.\scripts\dev\bootstrap.ps1
+```
+
+A versao PowerShell instala dependencias e roda validacoes basicas. Confirme o PostgreSQL local e rode migrations manualmente se necessario:
+
+```powershell
+.\.venv\Scripts\python.exe -m flask --app run.py db upgrade
+```
+
+### Variaveis de ambiente
 
 1. Copie `.env.example` para `.env`.
 2. Ajuste `SECRET_KEY`, `JWT_SECRET_KEY`, `DEV_DATABASE_URI` e, em producao, `DATABASE_URI`.
@@ -20,49 +53,70 @@ Backend Flask/PostgreSQL para gerenciamento de chamados e assistencias. O modulo
 
 Uploads reais, logs, backups, dumps, bancos locais e `.env` nao devem ser versionados. O repositorio mantem apenas placeholders como `api/static/uploads/.gitkeep` e `storage/.gitkeep`.
 
-## Instalacao local
+Exemplo local:
 
 ```bash
-python -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
+DEV_DATABASE_URI=postgresql://assistencias:assistencias@localhost:5432/assistencias_dev
+TEST_DATABASE_URI=postgresql://assistencias:assistencias@localhost:5432/assistencias_test
 ```
 
-No Windows PowerShell:
+### Rodar a API
+
+Linux/WSL:
+
+```bash
+./scripts/dev/run.sh
+```
+
+Windows PowerShell:
 
 ```powershell
-python -m venv .venv
-.\.venv\Scripts\Activate.ps1
-pip install -r requirements.txt
+.\scripts\dev\run.ps1
 ```
 
-## Rodar localmente
+Por padrao a API sobe em `http://127.0.0.1:5000`.
+
+### Validar o projeto
 
 ```bash
-flask --app run.py run --debug
+./scripts/dev/check.sh
 ```
 
-Ou:
+No Windows:
+
+```powershell
+.\scripts\dev\check.ps1
+```
+
+O check importa a app, roda `compileall`, executa `pytest` quando disponivel e tenta consultar `flask db current`.
+
+### Resetar banco local
+
+Use somente em desenvolvimento. O script bloqueia `FLASK_ENV=production` e URIs que parecem producao.
 
 ```bash
-python run.py
+./scripts/dev/reset_db.sh
 ```
 
-## Migrations
+O reset pede confirmacao digitando `RESET`, apaga e recria o banco de `DEV_DATABASE_URI`, roda migrations e orienta a criacao de admin.
+
+### Admin inicial
+
+Depois das migrations, crie um admin de forma interativa:
 
 ```bash
-flask --app run.py db upgrade
+source .venv/bin/activate
+python -m flask --app run.py create-admin
 ```
+
+### Problemas comuns
+
+- `psql nao encontrado`: instale o cliente PostgreSQL.
+- `Nao foi possivel conectar ao banco`: revise `DEV_DATABASE_URI` e confirme que o banco existe.
+- `flask db current` falha no check: normalmente indica PostgreSQL indisponivel ou `.env` incorreto.
+- Scripts sem permissao no Linux/WSL: rode `chmod +x scripts/dev/*.sh`.
 
 Antes de criar ou alterar migrations, revise o impacto em producao e evite alterar migrations ja aplicadas.
-
-## Testes
-
-```bash
-pytest
-```
-
-Alguns testes dependem de PostgreSQL e de `TEST_DATABASE_URI` configurado.
 
 ## Baseline para GitHub
 
