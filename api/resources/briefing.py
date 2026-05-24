@@ -1,66 +1,77 @@
-# api/resources/briefing.py
+from __future__ import annotations
 
-from flask import Blueprint, request, jsonify
-from api.services.briefing_service import BriefingService
-from api.schemas.briefing_schema import DailyBriefing
-import os # Para usar a data de referência
+from datetime import datetime
 
-briefing_bp = Blueprint('briefing', __name__, url_prefix='/briefing')
+from flask import Blueprint, jsonify, request
+from flask_jwt_extended import jwt_required
 
-# Injeção de dependência (Assumindo que você tem um mecanismo para injetar serviços)
-# Em um projeto real, isso seria feito via Blueprints ou um setup de DI.
-# Aqui é uma simplificação conceitual.
-def create_briefing_route(service: BriefingService):
-    
-    @briefing_bp.route('/diario', methods=['GET'])
-    def get_daily_briefing():
-        # 1. Determinar a data de referência (MVP: Hoje)
-        date_ref = datetime.now().strftime('%Y-%m-%d')
-        
-        # 2. Obter o corpo da requisição (se houver filtros além do escopo)
-        escopo = request.args.get('escopo', 'chamados')
-        
-        # 3. Executar o serviço
-        try:
-            briefing_data = service.generate_daily_briefing(date_ref)
-            return jsonify(briefing_data.__dict__), 200
-        except Exception as e:
-            # Logar o erro em produção
-            return jsonify({"error": f"Erro ao gerar briefing: {str(e)}"}), 500
+from api.services.briefing_service import gerar_briefing_diario
 
-# Onde você registraria esta rota no seu arquivo principal de rotas (ex: api/routes.py)
-# routes.register_blueprint(briefing_bp)
 
-api_bp = Blueprint('api', __name__, url_prefix='/api/v1/briefing')
+briefing_bp = Blueprint("briefing", __name__)
 
-@api_bp.route('/operacional', methods=['GET'])
-def get_operacional_briefing_endpoint():
-    """
-    Endpoint to retrieve the operational briefing summary.
-    Supports optional limit query parameter.
-    """
+
+def _parse_data_referencia(valor: str | None):
+    if not valor:
+        return None
+
     try:
-        limit = request.args.get('limit', '20', type=int)
-        if limit <= 0:
-            limit = 20
-    except ValueError:
-        limit = 20
-        
+        return datetime.strptime(valor, "%Y-%m-%d").date()
+    except ValueError as exc:
+        raise ValueError("Parâmetro data inválido. Use o formato YYYY-MM-DD.") from exc
+
+
+def _parse_int_opcional(valor: str | None, nome: str):
+    if valor in (None, ""):
+        return None
+
     try:
-        briefing_data = get_operacional_briefing(limit=limit)
-        
-        # Success response
-        return jsonify({
-            "success": True,
-            "count": len(briefing_data),
-            "data": briefing_data,
-            "mensaje": "Briefing operacional cargado exitosamente."
-        }), 200
-        
-    except Exception as e:
-        # Error response
-        return jsonify({
-            "success": False,
-            "error": "Error al procesar el briefing operacional.",
-            "detalle": str(e)
-        }), 500
+        return int(valor)
+    except (TypeError, ValueError) as exc:
+        raise ValueError(f"Parâmetro {nome} inválido.") from exc
+
+
+def _parse_limite(valor: str | None) -> int:
+    if valor in (None, ""):
+        return 50
+
+    try:
+        limite = int(valor)
+    except (TypeError, ValueError) as exc:
+        raise ValueError("Parâmetro limite inválido.") from exc
+
+    if limite < 1:
+        return 1
+
+    if limite > 200:
+        return 200
+
+    return limite
+
+
+@briefing_bp.route("/diario", methods=["GET"])
+@jwt_required()
+def briefing_diario():
+    try:
+        escopo = request.args.get("escopo", "chamados")
+        data_referencia = _parse_data_referencia(request.args.get("data"))
+        responsavel_id = _parse_int_opcional(
+            request.args.get("responsavel_id"),
+            "responsavel_id",
+        )
+        limite = _parse_limite(request.args.get("limite"))
+
+        resultado = gerar_briefing_diario(
+            data_referencia=data_referencia,
+            escopo=escopo,
+            responsavel_id=responsavel_id,
+            limite=limite,
+        )
+
+        return jsonify(resultado), 200
+
+    except ValueError as exc:
+        return jsonify({"erro": str(exc)}), 400
+
+    except Exception:
+        return jsonify({"erro": "Erro ao gerar briefing diário."}), 500

@@ -154,6 +154,9 @@ def create_app(config_name=None):
 
     from .resources.execucao import execucao_bp
     app.register_blueprint(execucao_bp, url_prefix='/execucao')
+
+    from api.resources.briefing import briefing_bp
+    app.register_blueprint(briefing_bp, url_prefix="/briefing")
     
     # Rota para servir uploads (avatars, anexos, etc.)
     @app.route('/static/uploads/<path:filename>')
