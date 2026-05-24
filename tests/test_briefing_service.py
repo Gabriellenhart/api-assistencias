@@ -10,6 +10,7 @@ from api.services.briefing_service import (
     status_finalizado,
     sugerir_proxima_acao,
     truncar_texto,
+    gerar_briefing_diario,
 )
 
 
@@ -119,3 +120,54 @@ def test_prazo_label():
     assert prazo_label(hoje, "vence_amanha") == "Vence amanhã"
     assert prazo_label(hoje, "atrasado") == "Atrasado"
     assert prazo_label(hoje + timedelta(days=3), "futuro") == "2026-05-27"
+
+def test_gerar_briefing_diario_escopo_invalido():
+    try:
+        gerar_briefing_diario(escopo="orcamentos")
+        assert False, "Deveria levantar ValueError para escopo inválido"
+    except ValueError as exc:
+        assert "Escopo ainda não suportado" in str(exc)
+
+
+def test_gerar_briefing_diario_retorna_estrutura(app):
+    with app.app_context():
+        resultado = gerar_briefing_diario(limite=5)
+
+    assert isinstance(resultado, dict)
+    assert "data_referencia" in resultado
+    assert "gerado_em" in resultado
+    assert resultado["escopo"] == "chamados"
+    assert "resumo" in resultado
+    assert "tarefas" in resultado
+    assert isinstance(resultado["tarefas"], list)
+
+
+def test_gerar_briefing_diario_resumo_tem_chaves(app):
+    with app.app_context():
+        resultado = gerar_briefing_diario(limite=5)
+
+    resumo = resultado["resumo"]
+
+    chaves = {
+        "total",
+        "criticos",
+        "altos",
+        "medios",
+        "baixos",
+        "atrasados",
+        "vencem_hoje",
+        "vencem_amanha",
+        "sem_prazo",
+        "sem_responsavel",
+        "sem_atualizacao",
+        "aguardando_cliente",
+    }
+
+    assert chaves.issubset(set(resumo.keys()))
+
+
+def test_gerar_briefing_diario_limite(app):
+    with app.app_context():
+        resultado = gerar_briefing_diario(limite=1)
+
+    assert len(resultado["tarefas"]) <= 1
