@@ -88,3 +88,7 @@ instance/
 dmypy.json
 .pyre/
 .pytype/
+
+
+api/static/*
+api/static/uploads/*
