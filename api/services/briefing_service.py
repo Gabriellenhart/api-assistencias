@@ -644,12 +644,38 @@ def _motivos_da_tarefa(
 
     return motivos
 
+def _resolver_id_chamado(chamado: Any) -> int | None:
+    """
+    Resolve o identificador real do chamado.
+
+    O model principal de chamados pode usar `id_chamado` em vez de `id`.
+    O briefing precisa retornar esse ID para o frontend abrir corretamente
+    a tela de detalhes em #/chamados/:id.
+    """
+    id_chamado = _getattr_any(
+        chamado,
+        (
+            "id_chamado",
+            "chamado_id",
+            "id",
+        ),
+        None,
+    )
+
+    if id_chamado is None:
+        return None
+
+    try:
+        return int(id_chamado)
+    except (TypeError, ValueError):
+        return None
+
 
 def _montar_tarefa_chamado(
     chamado: Any,
     data_referencia: date,
 ) -> dict[str, Any] | None:
-    chamado_id = _getattr_any(chamado, ("id",), None)
+    chamado_id = _resolver_id_chamado(chamado)
     status = _getattr_any(chamado, ("status",), "aberto")
 
     if status_finalizado(status):
@@ -704,6 +730,7 @@ def _montar_tarefa_chamado(
         "ordem": 0,
         "tipo": "chamado",
         "id": chamado_id,
+        "id_chamado": chamado_id,
         "codigo": f"CH-{chamado_id}" if chamado_id is not None else "CH-S/I",
         "titulo": titulo,
         "cliente": cliente,
@@ -721,9 +748,9 @@ def _montar_tarefa_chamado(
         "motivos": motivos,
         "dias_sem_atualizacao": dias_sem_atualizacao,
         "score": score,
-        "url": f"/chamados/{chamado_id}" if chamado_id is not None else "/chamados",
+        "url": f"/chamados/{chamado_id}" if chamado_id is not None else None,
         "_ordem_prazo": _valor_data_ordenacao(prazo),
-    }
+}
 
 
 def _montar_resumo(tarefas: list[dict[str, Any]]) -> dict[str, int]:

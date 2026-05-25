@@ -171,3 +171,36 @@ def test_gerar_briefing_diario_limite(app):
         resultado = gerar_briefing_diario(limite=1)
 
     assert len(resultado["tarefas"]) <= 1
+
+def test_resolver_id_chamado_prefere_id_chamado():
+    from api.services.briefing_service import _resolver_id_chamado
+
+    class ChamadoFake:
+        id_chamado = 123
+        id = None
+
+    chamado = ChamadoFake()
+
+    assert _resolver_id_chamado(chamado) == 123
+
+
+def test_resolver_id_chamado_usa_id_como_fallback():
+    from api.services.briefing_service import _resolver_id_chamado
+
+    class ChamadoFake:
+        id = 456
+
+    chamado = ChamadoFake()
+
+    assert _resolver_id_chamado(chamado) == 456
+
+
+def test_resolver_id_chamado_retorna_none_quando_nao_existe():
+    from api.services.briefing_service import _resolver_id_chamado
+
+    class ChamadoFake:
+        pass
+
+    chamado = ChamadoFake()
+
+    assert _resolver_id_chamado(chamado) is None
