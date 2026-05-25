@@ -11,6 +11,7 @@ from api.services.briefing_service import (
     sugerir_proxima_acao,
     truncar_texto,
     gerar_briefing_diario,
+    montar_ultima_acao_detalhada,
 )
 
 
@@ -204,3 +205,153 @@ def test_resolver_id_chamado_retorna_none_quando_nao_existe():
     chamado = ChamadoFake()
 
     assert _resolver_id_chamado(chamado) is None
+
+def test_ultima_acao_log_automatico_nao_retorna_automatico():
+    class LogFake:
+        tipo_log = "automatico"
+        data_criacao = datetime(2026, 5, 23, 15, 40)
+
+    class ChamadoFake:
+        status = "Aguardando Fabricante"
+        logs = [LogFake()]
+
+    resultado = montar_ultima_acao_detalhada(ChamadoFake())
+
+    assert resultado["texto"] != "automatico"
+    assert "Status atual: Aguardando Fabricante" in resultado["texto"]
+    assert resultado["usuario"] == "Sistema"
+
+
+def test_ultima_acao_alteracao_status_com_usuario_e_data():
+    class UsuarioFake:
+        nome_usuario = "Gabriel"
+
+    class LogFake:
+        campo = "status"
+        valor_anterior = "Em análise"
+        valor_novo = "Aguardando Fabricante"
+        usuario = UsuarioFake()
+        data_criacao = datetime(2026, 5, 23, 15, 40)
+
+    class ChamadoFake:
+        status = "Aguardando Fabricante"
+        logs = [LogFake()]
+
+    resultado = montar_ultima_acao_detalhada(ChamadoFake())
+
+    assert resultado["tipo"] == "alteracao_status"
+    assert resultado["origem"] == "auditoria"
+    assert resultado["usuario"] == "Gabriel"
+    assert resultado["data"] == "2026-05-23T15:40:00"
+    assert (
+        resultado["texto"]
+        == "Status alterado de Em análise para Aguardando Fabricante por Gabriel em 23/05/2026 15:40."
+    )
+    assert resultado["detalhes"]["campo"] == "status"
+    assert resultado["detalhes"]["valor_anterior"] == "Em análise"
+    assert resultado["detalhes"]["valor_novo"] == "Aguardando Fabricante"
+
+
+def test_ultima_acao_status_com_apenas_valor_novo():
+    class UsuarioFake:
+        nome_usuario = "Técnico"
+
+    class LogFake:
+        campo_alterado = "status"
+        valor_novo = "Aguardando Pagamento"
+        usuario = UsuarioFake()
+        data_criacao = datetime(2026, 5, 23, 10, 15)
+
+    class ChamadoFake:
+        status = "Aguardando Pagamento"
+        logs = [LogFake()]
+
+    resultado = montar_ultima_acao_detalhada(ChamadoFake())
+
+    assert resultado["tipo"] == "alteracao_status"
+    assert (
+        resultado["texto"]
+        == "Status alterado para Aguardando Pagamento por Técnico em 23/05/2026 10:15."
+    )
+
+
+def test_ultima_acao_comentario_com_usuario_e_data():
+    class UsuarioFake:
+        nome_usuario = "Maria"
+
+    class ComentarioFake:
+        id = 55
+        comentario = "Cliente informou que o inversor voltou a apresentar falha."
+        usuario = UsuarioFake()
+        data_criacao = datetime(2026, 5, 23, 16, 20)
+
+    class ChamadoFake:
+        status = "Em andamento"
+        comentarios = [ComentarioFake()]
+        logs = []
+
+    resultado = montar_ultima_acao_detalhada(ChamadoFake())
+
+    assert resultado["tipo"] == "comentario"
+    assert resultado["origem"] == "comentario"
+    assert resultado["usuario"] == "Maria"
+    assert resultado["data"] == "2026-05-23T16:20:00"
+    assert resultado["texto"].startswith("Comentário por Maria em 23/05/2026 16:20:")
+    assert resultado["detalhes"]["comentario_id"] == 55
+
+
+def test_ultima_acao_comentario_mais_recente_vence_log():
+    class LogFake:
+        campo = "status"
+        valor_novo = "Em análise"
+        data_criacao = datetime(2026, 5, 22, 10, 0)
+
+    class ComentarioFake:
+        comentario = "Comentário mais recente."
+        autor = "Gabriel"
+        data_criacao = datetime(2026, 5, 23, 10, 0)
+
+    class ChamadoFake:
+        status = "Em análise"
+        logs = [LogFake()]
+        comentarios = [ComentarioFake()]
+
+    resultado = montar_ultima_acao_detalhada(ChamadoFake())
+
+    assert resultado["tipo"] == "comentario"
+    assert "Comentário mais recente" in resultado["texto"]
+
+
+def test_ultima_acao_log_mais_recente_vence_comentario():
+    class LogFake:
+        campo = "status"
+        valor_novo = "Aguardando Fabricante"
+        autor = "Sistema"
+        data_criacao = datetime(2026, 5, 24, 10, 0)
+
+    class ComentarioFake:
+        comentario = "Comentário antigo."
+        autor = "Gabriel"
+        data_criacao = datetime(2026, 5, 23, 10, 0)
+
+    class ChamadoFake:
+        status = "Aguardando Fabricante"
+        logs = [LogFake()]
+        comentarios = [ComentarioFake()]
+
+    resultado = montar_ultima_acao_detalhada(ChamadoFake())
+
+    assert resultado["tipo"] == "alteracao_status"
+    assert "Aguardando Fabricante" in resultado["texto"]
+
+
+def test_ultima_acao_fallback_sem_log_e_sem_comentario():
+    class ChamadoFake:
+        status = "Aberto"
+
+    resultado = montar_ultima_acao_detalhada(ChamadoFake())
+
+    assert resultado["tipo"] == "fallback"
+    assert resultado["origem"] == "chamado"
+    assert resultado["usuario"] == "Sistema"
+    assert resultado["texto"] == "Status atual: Aberto."

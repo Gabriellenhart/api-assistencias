@@ -14,6 +14,146 @@ STATUS_FINALIZADOS = {
     "finalizado",
 }
 
+def _importar_model_por_nomes(possibilidades: tuple[tuple[str, str], ...]):
+    """
+    Importa dinamicamente um model tentando diferentes módulos/classes.
+    Retorna a classe encontrada ou None.
+    """
+    for modulo, classe in possibilidades:
+        try:
+            module = __import__(modulo, fromlist=[classe])
+            model = getattr(module, classe, None)
+            if model is not None:
+                return model
+        except Exception:
+            continue
+
+    return None
+
+
+def _model_log_chamado():
+    return _importar_model_por_nomes(
+        (
+            ("api.models.chamado_log", "ChamadoLog"),
+            ("api.models.chamado_logs", "ChamadoLog"),
+            ("api.models.log_chamado", "ChamadoLog"),
+            ("api.models.logs_chamado", "ChamadoLog"),
+            ("api.models.chamado", "ChamadoLog"),
+            ("api.models", "ChamadoLog"),
+        )
+    )
+
+
+def _model_comentario_chamado():
+    return _importar_model_por_nomes(
+        (
+            ("api.models.chamado_comentario", "ChamadoComentario"),
+            ("api.models.chamado_comentarios", "ChamadoComentario"),
+            ("api.models.comentario_chamado", "ChamadoComentario"),
+            ("api.models.comentarios_chamado", "ChamadoComentario"),
+            ("api.models.comentario", "Comentario"),
+            ("api.models.comentarios", "Comentario"),
+            ("api.models.chamado", "ChamadoComentario"),
+            ("api.models", "ChamadoComentario"),
+            ("api.models", "Comentario"),
+        )
+    )
+
+
+def _campo_existente_model(model: Any, nomes: tuple[str, ...]) -> str | None:
+    if model is None:
+        return None
+
+    for nome in nomes:
+        if hasattr(model, nome):
+            return nome
+
+    return None
+
+
+def _buscar_ultimo_por_query(
+    model: Any,
+    id_chamado: int | None,
+    campos_fk: tuple[str, ...],
+) -> Any:
+    """
+    Busca último registro relacionado ao chamado diretamente no banco.
+    Usado quando o objeto Chamado não carrega logs/comentários como relação.
+    """
+    if model is None or id_chamado is None:
+        return None
+
+    campo_fk = _campo_existente_model(model, campos_fk)
+    if campo_fk is None:
+        return None
+
+    try:
+        query = model.query.filter(getattr(model, campo_fk) == id_chamado)
+    except Exception:
+        return None
+
+    campos_data = (
+        "data_criacao",
+        "created_at",
+        "criado_em",
+        "data",
+        "timestamp",
+        "updated_at",
+        "atualizado_em",
+    )
+
+    campo_data = _campo_existente_model(model, campos_data)
+
+    try:
+        if campo_data:
+            return query.order_by(getattr(model, campo_data).desc()).first()
+
+        campo_id = _campo_existente_model(
+            model,
+            (
+                "id",
+                "id_log",
+                "id_comentario",
+                "id_chamado_log",
+                "id_chamado_comentario",
+            ),
+        )
+
+        if campo_id:
+            return query.order_by(getattr(model, campo_id).desc()).first()
+
+        return query.first()
+
+    except Exception:
+        return None
+
+
+def _buscar_ultimo_log_por_id_chamado(id_chamado: int | None) -> Any:
+    model = _model_log_chamado()
+
+    return _buscar_ultimo_por_query(
+        model,
+        id_chamado,
+        (
+            "id_chamado",
+            "chamado_id",
+            "id_chamado_fk",
+        ),
+    )
+
+
+def _buscar_ultimo_comentario_por_id_chamado(id_chamado: int | None) -> Any:
+    model = _model_comentario_chamado()
+
+    return _buscar_ultimo_por_query(
+        model,
+        id_chamado,
+        (
+            "id_chamado",
+            "chamado_id",
+            "id_chamado_fk",
+        ),
+    )
 
 def normalizar_texto(valor: Any) -> str:
     """
@@ -510,13 +650,442 @@ def _inferir_aguardando_cliente(chamado: Any) -> bool:
 
 
 def _valor_data_ordenacao(prazo: Any) -> date:
+    """
+    Retorna uma data usada apenas para ordenação.
+    Prazos ausentes vão para o final da lista.
+    """
     prazo_data = apenas_data(prazo)
+
     if prazo_data is None:
         return date.max
+
     return prazo_data
+
+def _resolver_datetime(valor: Any) -> datetime | None:
+    """
+    Normaliza datas de eventos para datetime, permitindo comparação entre
+    logs, comentários e auditoria.
+    """
+    if valor is None:
+        return None
+
+    if isinstance(valor, datetime):
+        return valor
+
+    if isinstance(valor, date):
+        return datetime.combine(valor, datetime.min.time())
+
+    return None
+
+
+def _resolver_data_evento(evento: Any) -> datetime | None:
+    """
+    Resolve a data/hora de um evento de comentário, log ou auditoria.
+    """
+    valor = _getattr_any(
+        evento,
+        (
+            "data_criacao",
+            "created_at",
+            "criado_em",
+            "data",
+            "timestamp",
+            "updated_at",
+            "atualizado_em",
+        ),
+        None,
+    )
+
+    return _resolver_datetime(valor)
+
+
+def _data_evento_iso(data_evento: datetime | None) -> str | None:
+    if data_evento is None:
+        return None
+
+    return data_evento.isoformat(timespec="seconds")
+
+
+def _formatar_data_evento(data_evento: datetime | None) -> str | None:
+    """
+    Formata data para texto operacional.
+    """
+    if data_evento is None:
+        return None
+
+    return data_evento.strftime("%d/%m/%Y %H:%M")
+
+
+def _resolver_nome_usuario_de_objeto(usuario_obj: Any) -> str | None:
+    """
+    Resolve o nome do usuário a partir de uma relação/objeto de usuário.
+    """
+    if usuario_obj is None:
+        return None
+
+    nome = _getattr_any(
+        usuario_obj,
+        (
+            "nome_usuario",
+            "nome",
+            "name",
+            "email",
+            "username",
+            "login",
+        ),
+        None,
+    )
+
+    if nome:
+        return truncar_texto(nome, 80)
+
+    return None
+
+
+def _resolver_usuario_evento(evento: Any) -> str:
+    """
+    Resolve o usuário responsável pelo evento.
+
+    Tenta primeiro relações de usuário, depois campos textuais, depois IDs.
+    Se nada existir, retorna Sistema.
+    """
+    for relacao in (
+        "usuario",
+        "user",
+        "autor_usuario",
+        "criado_por_usuario",
+        "responsavel",
+    ):
+        usuario_obj = getattr(evento, relacao, None)
+        nome = _resolver_nome_usuario_de_objeto(usuario_obj)
+        if nome:
+            return nome
+
+    nome_direto = _getattr_any(
+        evento,
+        (
+            "nome_usuario",
+            "usuario_nome",
+            "autor",
+            "criado_por",
+            "email_usuario",
+            "usuario_email",
+        ),
+        None,
+    )
+
+    if nome_direto:
+        return truncar_texto(nome_direto, 80)
+
+    usuario_id = _getattr_any(
+        evento,
+        (
+            "usuario_id",
+            "id_usuario",
+            "criado_por_id",
+            "autor_id",
+        ),
+        None,
+    )
+
+    if usuario_id not in (None, ""):
+        return f"Usuário #{usuario_id}"
+
+    return "Sistema"
+
+
+def _texto_data_usuario(usuario: str | None, data_evento: datetime | None) -> str:
+    """
+    Monta trecho textual:
+    - por Gabriel em 23/05/2026 15:40
+    - por Gabriel
+    - em 23/05/2026 15:40
+    - ""
+    """
+    usuario_limpo = truncar_texto(usuario, 80) if usuario else ""
+    data_formatada = _formatar_data_evento(data_evento)
+
+    if usuario_limpo and data_formatada:
+        return f"por {usuario_limpo} em {data_formatada}"
+
+    if usuario_limpo:
+        return f"por {usuario_limpo}"
+
+    if data_formatada:
+        return f"em {data_formatada}"
+
+    return ""
+
+
+def _texto_generico_automatico(texto: Any) -> bool:
+    texto_normalizado = normalizar_texto(texto)
+
+    return texto_normalizado in {
+        "automatico",
+        "auto",
+        "sistema",
+        "automatizado",
+    }
+
+
+def _resolver_primeiro_texto_util(evento: Any) -> str | None:
+    """
+    Busca um texto útil no evento, ignorando textos genéricos como automatico.
+    """
+    texto = _getattr_any(
+        evento,
+        (
+            "comentario",
+            "descricao",
+            "mensagem",
+            "texto",
+            "conteudo",
+            "detalhes",
+            "acao",
+            "tipo_log",
+            "tipo",
+        ),
+        None,
+    )
+
+    if not texto:
+        return None
+
+    texto_curto = truncar_texto(texto, 180)
+
+    if _texto_generico_automatico(texto_curto):
+        return None
+
+    return texto_curto
+
+
+def _resolver_campo_alterado(evento: Any) -> str | None:
+    campo = _getattr_any(
+        evento,
+        (
+            "campo",
+            "campo_alterado",
+            "field",
+            "atributo",
+        ),
+        None,
+    )
+
+    if campo:
+        return truncar_texto(campo, 80)
+
+    return None
+
+
+def _resolver_valor_anterior(evento: Any) -> Any:
+    return _getattr_any(
+        evento,
+        (
+            "valor_anterior",
+            "valor_antigo",
+            "antes",
+            "old_value",
+            "valor_old",
+        ),
+        None,
+    )
+
+
+def _resolver_valor_novo(evento: Any) -> Any:
+    return _getattr_any(
+        evento,
+        (
+            "valor_novo",
+            "novo_valor",
+            "depois",
+            "new_value",
+            "valor_new",
+            "status_novo",
+            "status",
+        ),
+        None,
+    )
+
+
+def _evento_indica_status(evento: Any) -> bool:
+    """
+    Detecta se o evento parece ser alteração de status.
+    """
+    campo = normalizar_texto(_resolver_campo_alterado(evento))
+
+    if campo == "status":
+        return True
+
+    texto_composto = " ".join(
+        normalizar_texto(_getattr_any(evento, (campo_nome,), ""))
+        for campo_nome in (
+            "acao",
+            "descricao",
+            "mensagem",
+            "texto",
+            "tipo",
+            "tipo_log",
+            "campo",
+            "campo_alterado",
+        )
+    )
+
+    return "status" in texto_composto
+
+
+def _evento_e_comentario(evento: Any) -> bool:
+    """
+    Detecta comentário pela presença de campos típicos.
+    """
+    texto = _getattr_any(
+        evento,
+        (
+            "comentario",
+            "conteudo",
+            "texto",
+        ),
+        None,
+    )
+
+    if texto:
+        return True
+
+    tipo = normalizar_texto(_getattr_any(evento, ("tipo", "tipo_log", "origem"), ""))
+
+    return "comentario" in tipo
+
+
+def _formatar_comentario_evento(evento: Any) -> dict[str, Any]:
+    data_evento = _resolver_data_evento(evento)
+    usuario = _resolver_usuario_evento(evento)
+    texto = _resolver_primeiro_texto_util(evento) or "Comentário registrado."
+
+    trecho_usuario_data = _texto_data_usuario(usuario, data_evento)
+
+    if trecho_usuario_data:
+        texto_final = f"Comentário {trecho_usuario_data}: {texto}"
+    else:
+        texto_final = f"Comentário: {texto}"
+
+    comentario_id = _getattr_any(evento, ("id", "id_comentario", "comentario_id"), None)
+
+    return {
+        "texto": truncar_texto(texto_final, 240),
+        "tipo": "comentario",
+        "origem": "comentario",
+        "data": _data_evento_iso(data_evento),
+        "usuario": usuario,
+        "detalhes": {
+            "comentario_id": comentario_id,
+        },
+    }
+
+
+def _formatar_log_auditoria_evento(evento: Any, chamado: Any) -> dict[str, Any]:
+    data_evento = _resolver_data_evento(evento)
+    usuario = _resolver_usuario_evento(evento)
+    trecho_usuario_data = _texto_data_usuario(usuario, data_evento)
+
+    campo = _resolver_campo_alterado(evento)
+    campo_normalizado = normalizar_texto(campo)
+
+    valor_anterior = _resolver_valor_anterior(evento)
+    valor_novo = _resolver_valor_novo(evento)
+
+    status_atual = _getattr_any(chamado, ("status",), None)
+
+    tipo = "auditoria"
+    origem = "auditoria"
+
+    if _evento_indica_status(evento) or campo_normalizado == "status":
+        tipo = "alteracao_status"
+
+        if valor_anterior and valor_novo:
+            texto = f"Status alterado de {valor_anterior} para {valor_novo}"
+        elif valor_novo:
+            texto = f"Status alterado para {valor_novo}"
+        elif status_atual:
+            texto = f"Status atual: {status_atual}"
+        else:
+            texto = "Status do chamado atualizado"
+
+        if trecho_usuario_data:
+            texto = f"{texto} {trecho_usuario_data}."
+
+        else:
+            texto = f"{texto}."
+
+        return {
+            "texto": truncar_texto(texto, 240),
+            "tipo": tipo,
+            "origem": origem,
+            "data": _data_evento_iso(data_evento),
+            "usuario": usuario,
+            "detalhes": {
+                "campo": campo or "status",
+                "valor_anterior": valor_anterior,
+                "valor_novo": valor_novo,
+            },
+        }
+
+    texto_util = _resolver_primeiro_texto_util(evento)
+
+    if texto_util and not _texto_generico_automatico(texto_util):
+        texto = texto_util
+
+        if trecho_usuario_data:
+            texto = f"{texto} {trecho_usuario_data}."
+
+        return {
+            "texto": truncar_texto(texto, 240),
+            "tipo": tipo,
+            "origem": origem,
+            "data": _data_evento_iso(data_evento),
+            "usuario": usuario,
+            "detalhes": {
+                "campo": campo,
+                "valor_anterior": valor_anterior,
+                "valor_novo": valor_novo,
+            },
+        }
+
+    if status_atual:
+        texto = f"Status atual: {status_atual}"
+
+        if trecho_usuario_data:
+            texto = f"{texto} {trecho_usuario_data}."
+        else:
+            texto = f"{texto}."
+
+        return {
+            "texto": truncar_texto(texto, 240),
+            "tipo": "fallback",
+            "origem": "auditoria",
+            "data": _data_evento_iso(data_evento),
+            "usuario": usuario,
+            "detalhes": {
+                "campo": campo,
+                "valor_anterior": valor_anterior,
+                "valor_novo": valor_novo,
+            },
+        }
+
+    return {
+        "texto": "Chamado criado e aguardando primeira análise.",
+        "tipo": "fallback",
+        "origem": "chamado",
+        "data": _data_evento_iso(data_evento),
+        "usuario": usuario,
+        "detalhes": {},
+    }
 
 
 def _buscar_ultimo_item_relacionado(chamado: Any, nomes_relacao: tuple[str, ...]) -> Any:
+    """
+    Busca o item mais recente em relações como logs/comentários.
+
+    Usa datas normalizadas para evitar erro de comparação entre date e datetime.
+    """
     for nome in nomes_relacao:
         if not hasattr(chamado, nome):
             continue
@@ -535,79 +1104,123 @@ def _buscar_ultimo_item_relacionado(chamado: Any, nomes_relacao: tuple[str, ...]
             continue
 
         def chave(item: Any):
-            data_item = _getattr_any(
-                item,
-                (
-                    "data_criacao",
-                    "created_at",
-                    "criado_em",
-                    "data",
-                    "timestamp",
-                ),
-                None,
-            )
-            id_item = _getattr_any(item, ("id",), 0)
-            return (data_item or datetime.min, id_item or 0)
+            data_item = _resolver_data_evento(item) or datetime.min
+            id_item = _getattr_any(item, ("id", "id_log", "id_comentario"), 0)
+            return (data_item, id_item or 0)
 
         return sorted(itens, key=chave)[-1]
 
     return None
 
 
-def _texto_de_item_relacionado(item: Any) -> str | None:
-    if item is None:
-        return None
+def _escolher_evento_mais_recente(comentario: Any, log: Any) -> tuple[Any | None, str | None]:
+    if comentario is None and log is None:
+        return None, None
 
-    texto = _getattr_any(
-        item,
+    if comentario is not None and log is None:
+        return comentario, "comentario"
+
+    if log is not None and comentario is None:
+        return log, "auditoria"
+
+    data_comentario = _resolver_data_evento(comentario)
+    data_log = _resolver_data_evento(log)
+
+    if data_comentario is not None and data_log is not None:
+        if data_comentario >= data_log:
+            return comentario, "comentario"
+        return log, "auditoria"
+
+    if data_comentario is not None:
+        return comentario, "comentario"
+
+    if data_log is not None:
+        return log, "auditoria"
+
+    # Sem data clara, comentário é mais útil para o usuário.
+    return comentario, "comentario"
+
+
+def montar_ultima_acao_detalhada(
+    chamado: Any,
+    data_atualizacao: date | datetime | None = None,
+) -> dict[str, Any]:
+    """
+    Monta a última ação operacional do chamado para o Briefing.
+
+    Estratégia:
+    1. Tenta usar relações já carregadas no objeto Chamado.
+    2. Se não encontrar, consulta diretamente logs/comentários por id_chamado.
+    3. Escolhe o evento mais recente.
+    4. Formata texto útil com usuário e data.
+    """
+    id_chamado = _resolver_id_chamado(chamado)
+
+    ultimo_comentario = _buscar_ultimo_item_relacionado(
+        chamado,
         (
-            "comentario",
-            "descricao",
-            "mensagem",
-            "texto",
-            "conteudo",
-            "tipo_log",
-            "acao",
+            "comentarios",
+            "comentarios_chamado",
+            "comments",
+            "chamado_comentarios",
         ),
-        None,
     )
 
-    if texto:
-        return truncar_texto(texto, 180)
-
-    return None
-
-
-def montar_ultima_acao(chamado: Any, data_atualizacao: date | None = None) -> str:
-    """
-    Monta um resumo curto da última ação do chamado.
-
-    Tenta relações comuns de logs/comentários. Se não houver relação simples,
-    usa fallback seguro.
-    """
-    item = _buscar_ultimo_item_relacionado(
+    ultimo_log = _buscar_ultimo_item_relacionado(
         chamado,
         (
             "logs",
-            "comentarios",
-            "comments",
             "chamado_logs",
+            "historicos",
+            "historico",
+            "auditorias",
+            "auditoria",
         ),
     )
 
-    texto = _texto_de_item_relacionado(item)
-    if texto:
-        return texto
+    # Fallback importante: buscar diretamente no banco por id_chamado.
+    if ultimo_comentario is None:
+        ultimo_comentario = _buscar_ultimo_comentario_por_id_chamado(id_chamado)
 
-    status = _getattr_any(chamado, ("status",), None)
-    if status and data_atualizacao:
-        return f"Status atual: {status}. Última atualização em {data_atualizacao.isoformat()}."
+    if ultimo_log is None:
+        ultimo_log = _buscar_ultimo_log_por_id_chamado(id_chamado)
 
-    if status:
-        return f"Status atual: {status}."
+    evento, origem = _escolher_evento_mais_recente(ultimo_comentario, ultimo_log)
 
-    return "Chamado criado e aguardando primeira análise."
+    if evento is None:
+        status = _getattr_any(chamado, ("status",), None)
+        data_evento = _resolver_datetime(data_atualizacao)
+        data_iso = _data_evento_iso(data_evento)
 
+        if status:
+            texto = f"Status atual: {status}."
+        else:
+            texto = "Chamado criado e aguardando primeira análise."
+
+        return {
+            "texto": texto,
+            "tipo": "fallback",
+            "origem": "chamado",
+            "data": data_iso,
+            "usuario": "Sistema",
+            "detalhes": {},
+        }
+
+    if origem == "comentario" or _evento_e_comentario(evento):
+        return _formatar_comentario_evento(evento)
+
+    return _formatar_log_auditoria_evento(evento, chamado)
+
+
+def montar_ultima_acao(
+    chamado: Any,
+    data_atualizacao: date | datetime | None = None,
+) -> str:
+    """
+    Mantém compatibilidade com chamadas antigas que esperam apenas string.
+    A lógica principal agora fica em montar_ultima_acao_detalhada().
+    """
+    return montar_ultima_acao_detalhada(chamado, data_atualizacao)["texto"]
 
 def _motivos_da_tarefa(
     status_prazo: str,
@@ -725,6 +1338,7 @@ def _montar_tarefa_chamado(
     )
 
     prazo_data = apenas_data(prazo)
+    ultima_acao_info = montar_ultima_acao_detalhada(chamado, data_atualizacao)
 
     return {
         "ordem": 0,
@@ -742,7 +1356,12 @@ def _montar_tarefa_chamado(
         "prazo": prazo_data.isoformat() if prazo_data is not None else None,
         "prazo_label": prazo_label(prazo, status_prazo),
         "status_prazo": status_prazo,
-        "ultima_acao": montar_ultima_acao(chamado, data_atualizacao),
+        "ultima_acao": ultima_acao_info["texto"],
+        "ultima_acao_tipo": ultima_acao_info["tipo"],
+        "ultima_acao_origem": ultima_acao_info["origem"],
+        "ultima_acao_data": ultima_acao_info["data"],
+        "ultima_acao_usuario": ultima_acao_info["usuario"],
+        "ultima_acao_detalhes": ultima_acao_info["detalhes"],
         "proxima_acao": proxima_acao,
         "motivo": truncar_texto(", ".join(motivos), 180),
         "motivos": motivos,
@@ -750,7 +1369,7 @@ def _montar_tarefa_chamado(
         "score": score,
         "url": f"/chamados/{chamado_id}" if chamado_id is not None else None,
         "_ordem_prazo": _valor_data_ordenacao(prazo),
-}
+    }
 
 
 def _montar_resumo(tarefas: list[dict[str, Any]]) -> dict[str, int]:
